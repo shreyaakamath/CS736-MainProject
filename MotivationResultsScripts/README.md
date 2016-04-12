@@ -22,3 +22,9 @@ Python 2.7
 * <b> Create and Launch instance: </b> Follow steps outlined in url http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/EC2_GetStarted.html#ec2-launch-instance_linux
 * <b> Store the key pair in a location </b>
 * <b> Move scripts to instance: </b> scp -i /path/cs736_micro_nqueens_1.pem nqueen_infinite_loop.py n-queen.o ubuntu@<publicDNS name>:/home/ubuntu/scripts/
+* <b> Install screen: </b> 
+**apt-get install screen
+**screen
+**type command
+** Ctrl+A+D
+** To reconnect - screen -r
