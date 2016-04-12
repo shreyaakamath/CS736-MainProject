@@ -8,7 +8,8 @@ if len(sys.argv) < 3:
 	sys.exit()	
 
 binary_file = sys.argv[1]
-nqueens_command = "./"+binary_file+" > tmp.txt"
+board_size = sys.argv[2]
+nqueens_command = "./"+binary_file+" "+board_size+" > tmp.txt"
 while True:
 	os.system(nqueens_command)
 	fp = open("tmp.txt","r");
