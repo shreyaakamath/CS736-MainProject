@@ -23,8 +23,8 @@ Python 2.7
 * <b> Store the key pair in a location </b>
 * <b> Move scripts to instance: </b> scp -i /path/cs736_micro_nqueens_1.pem nqueen_infinite_loop.py n-queen.o ubuntu@<publicDNS name>:/home/ubuntu/scripts/
 * <b> Install screen: </b> 
-**apt-get install screen
-**screen
-**type command
-** Ctrl+A+D
-** To reconnect - screen -r
+	* apt-get install screen
+	* screen
+	* type command
+	* Ctrl+A+D
+	* To reconnect - screen -r
