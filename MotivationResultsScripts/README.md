@@ -15,5 +15,5 @@ Python 2.7
 * <b>Command to run the iperf3 benchmark: </b>python iperf_infinite_loop.py <i>server_ip</i> &  
 
 ## Note
-* <b> To stop either of the benchmarks: </b> killall python; killalliperf3
+* <b> To stop either of the benchmarks: </b> killall python; killall iperf3
 * <b> Before launching the iperf3 benchmark, ensure that the server is running iperf3: </b> iperf3 -s
