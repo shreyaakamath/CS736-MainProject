@@ -17,3 +17,14 @@ Python 2.7
 ## Note
 * <b> To stop either of the benchmarks: </b> killall python; killall iperf3
 * <b> Before launching the iperf3 benchmark, ensure that the server is running iperf3: </b> iperf3 -s
+
+## Steps to run on AWS instance
+* <b> Create and Launch instance: </b> Follow steps outlined in url http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/EC2_GetStarted.html#ec2-launch-instance_linux
+* <b> Store the key pair in a location </b>
+* <b> Move scripts to instance: </b> scp -i /path/cs736_micro_nqueens_1.pem nqueen_infinite_loop.py n-queen.o ubuntu@<publicDNS name>:/home/ubuntu/scripts/
+* <b> Install screen: </b> 
+	* apt-get install screen
+	* screen
+	* type command
+	* Ctrl+A+D
+	* To reconnect - screen -r
