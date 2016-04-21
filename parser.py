@@ -20,6 +20,8 @@ if __name__ == '__main__':
             #print eachFile       
             filename = directory + str(eachFile)
             with open(filename, 'r') as f:
+                flavour = filename.split('_')[0]
+                print flavour
                 for line in f:
                     line = line.replace('\n', '')
                     if (line is '\n' or line is ' '):
@@ -104,13 +106,14 @@ if __name__ == '__main__':
                         continue
                     elif("Transfer rate" in line):
                         transferRate = line.strip('Transfer rate:          ').replace(' [Kbytes/sec] received', '')
-                        csvString += transferRate
+                        csvString += transferRate + ","
                         #print "Transfer rate is: " + transferRate
                         #continue
                     #csvString += "\n"
-            print csvString + '\n'
-            #output_file.write(unicode(csvString + "\n"))
-            #csvString = ""
+            #print csvString + '\n'
+            csvString += flavour
+            output_file.write(unicode(csvString + "\n"))
+            csvString = ""
             #break
         output_file.close()            
 
