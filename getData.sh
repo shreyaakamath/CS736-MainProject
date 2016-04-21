@@ -1,4 +1,5 @@
 #!/bin/bash
+#./getDataNano.sh micro1 54.186.41.160 "ec2-54-186-41-160.us-west-2.compute.amazonaws.com"
 name=$1
 server=$2
 instance=$3
