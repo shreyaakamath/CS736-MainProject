@@ -1,5 +1,5 @@
 #!/bin/bash
-#./getDataNano.sh micro1 54.186.41.160 "ec2-54-186-41-160.us-west-2.compute.amazonaws.com" abc.pem
+#./getData.sh small1 52.38.64.194 "ec2-52-38-64-194.us-west-2.compute.amazonaws.com" cs736_micro_iperf.pem
 name=$1
 server=$2
 instance=$3
