@@ -1,0 +1,42 @@
+This is ApacheBench, Version 2.3 <$Revision: 1528965 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 54.186.41.160 (be patient)
+
+
+Server Software:        lighttpd/1.4.33
+Server Hostname:        54.186.41.160
+Server Port:            80
+
+Document Path:          /
+Document Length:        3568 bytes
+
+Concurrency Level:      95
+Time taken for tests:   2.031 seconds
+Complete requests:      1000
+Failed requests:        0
+Total transferred:      3826000 bytes
+HTML transferred:       3568000 bytes
+Requests per second:    492.29 [#/sec] (mean)
+Time per request:       192.974 [ms] (mean)
+Time per request:       2.031 [ms] (mean, across all concurrent requests)
+Transfer rate:          1839.37 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:       49   91  34.1     80     208
+Processing:    43   97  41.0     82     219
+Waiting:       43   97  40.9     82     219
+Total:        113  188  57.5    163     346
+
+Percentage of the requests served within a certain time (ms)
+  50%    163
+  66%    185
+  75%    208
+  80%    228
+  90%    285
+  95%    321
+  98%    335
+  99%    337
+ 100%    346 (longest request)
