@@ -1,4 +1,4 @@
-filename,server,serverIP,doclength,concurrency,time,compreq,failreq,tottran,htmltran,reqpersec,timeperreqall,timeperreq,transrate
+filename,server,serverIP,doclength,concurrency,time,compreq,failreq,tottran,htmltran,reqpersec,timeperreqall,timeperreq,transrate,type
 micro_apache2_c_1_10,Apache/2.4.7,54.186.85.227,11510,10,0.071,100,0,1178300,1151000,1407.76,7.104,0.710,16198.83,micro
 micro_apache2_c_1_100,Apache/2.4.7,54.186.85.227,11510,100,0.079,100,0,1178300,1151000,1258.91,79.434,0.794,14486.03,micro
 micro_apache2_c_1_20,Apache/2.4.7,54.186.85.227,11510,20,0.068,100,0,1178300,1151000,1468.36,13.621,0.681,16896.22,micro
