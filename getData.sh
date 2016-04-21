@@ -1,14 +1,15 @@
 #!/bin/bash
-#./getDataNano.sh micro1 54.186.41.160 "ec2-54-186-41-160.us-west-2.compute.amazonaws.com"
+#./getDataNano.sh micro1 54.186.41.160 "ec2-54-186-41-160.us-west-2.compute.amazonaws.com" abc.pem
 name=$1
 server=$2
 instance=$3
+perm=$4
 echo $name
 echo $server
 echo $instance
 #server=54.186.41.160
 #instance="ec2-54-186-41-160.us-west-2.compute.amazonaws.com"
-perm="ubuntu-common-2.pem"
+#erm="ubuntu-common-2.pem"
 ssh -i $perm $instance  -t "sudo service apache2 start"
 start=10
 for i in {1..100} 
