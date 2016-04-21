@@ -18,26 +18,43 @@ data_reader.next()
 
 data = []
 for row in data_reader:
-	data.append([float(x) for x in row])
+     
+        type = row[-1]
+        if type == 'nano':
+		type = 0
+	else:	
+		type = 1
+        #print type
+	instance = [row[4], row[5], row[10],row[11],row[12],row[13],type]
+	data.append([float(x) for x in instance])
 
-
+#print data[0]
+print data
+'''
 min_max_scaler = preprocessing.MinMaxScaler()
 data = min_max_scaler.fit_transform(data)
+'''
 
 data = np.array(data,dtype="float")
-from random import shuffle
-shuffle(data)
+#from random import shuffle
+#np.random.shuffle(data)
 
 input_data = data[0:len(data),:-1]
 output_data = data[0:len(data),-1]
 
-training_data_input, testing_data_input, training_data_output, testing_data_output = train_test_split(input_data, output_data, test_size=0.30, random_state=0)
+#print input_data[0]
+#print output_data[0]
 
+training_data_input, testing_data_input, training_data_output, testing_data_output = train_test_split(input_data, output_data, test_size=0.95, random_state=0)
+
+print len(training_data_input)
+print len(testing_data_input)
 
 RFmodel = RandomForestClassifier(n_estimators = 100)
 RFmodel.fit(training_data_input,training_data_output)
 RFaccuracy = RFmodel.score(testing_data_input,testing_data_output)
 predicted_output = RFmodel.predict(testing_data_input)
+print predicted_output
 print "RFs :"+str(RFaccuracy*100.0)
 
 NBmodel = MultinomialNB()
