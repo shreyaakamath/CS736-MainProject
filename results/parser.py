@@ -17,7 +17,7 @@ if __name__ == '__main__':
         for eachFile in list_of_files:
             count += 1
             csvString = eachFile + ","
-            #print eachFile       
+            print eachFile       
             filename = directory + str(eachFile)
             with open(filename, 'r') as f:
                 flavour = eachFile.split('_')[0]
@@ -112,7 +112,10 @@ if __name__ == '__main__':
                     #csvString += "\n"
             #print csvString + '\n'
             csvString += flavour
-            output_file.write(unicode(csvString + "\n"))
+            if(len(csvString)<100):
+		csvString = ""
+		continue
+	    output_file.write(unicode(csvString + "\n"))
             csvString = ""
             #break
         output_file.close()            
