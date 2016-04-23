@@ -20,7 +20,7 @@ if __name__ == '__main__':
             #print eachFile       
             filename = directory + str(eachFile)
             with open(filename, 'r') as f:
-                flavour = filename.split('_')[0]
+                flavour = eachFile.split('_')[0]
                 print flavour
                 for line in f:
                     line = line.replace('\n', '')
