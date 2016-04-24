@@ -29,6 +29,7 @@ for row in data_reader:
 	elif(str(type).startswith("small")):
 		type = 2
         #print type
+	#concurrency,time,reqpersec,timeperreqall,timerperreq,trasrate,type
 	instance = [row[4], row[5], row[10],row[11],row[12],row[13],type]
 	data.append([float(x) for x in instance])
 
