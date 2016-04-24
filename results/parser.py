@@ -11,19 +11,20 @@ if __name__ == '__main__':
     list_of_files = os.listdir(directory)
     count=0
     output_file = io.open(sys.argv[2], 'a')
-    csvString = "filename" + "," + "server" + "," + "serverIP" + "," + "doclength" + "," + "concurrency" + "," + "time" + "," + "compreq" + "," + "failreq" + "," + "tottran" + "," + "htmltran" + "," + "reqpersec" + "," + "timeperreqall" + "," + "timeperreq" + "," + "transrate" + "\n"
+    csvString = "filename" + "," + "server" + "," + "serverIP" + "," + "doclength" + "," + "concurrency" + "," + "time" + "," + "compreq" + "," + "failreq" + "," + "tottran" + "," + "htmltran" + "," + "reqpersec" + "," + "timeperreqall" + "," + "timeperreq" + "," + "transrate" + "," + "type" + "\n"
     output_file.write(unicode(csvString))
     try :
         for eachFile in list_of_files:
             count += 1
             csvString = eachFile + ","
-            print eachFile       
+            #print eachFile       
             filename = directory + str(eachFile)
             with open(filename, 'r') as f:
                 flavour = eachFile.split('_')[0]
-                print flavour
+                #print flavour
                 for line in f:
-                    line = line.replace('\n', '')
+                    #print line
+		    line = line.replace('\n', '')
                     if (line is '\n' or line is ' '):
                         continue
                     if ("Version" in line) :
@@ -34,7 +35,6 @@ if __name__ == '__main__':
                         continue
                     elif (("Benchmarking " in line) and ("Total" in line)) :
                         continue
-                        
                         #temp = line.strip("Benchmarking ")
                         #temp1 = temp[:temp.index('(be ')].strip(' ')
                         #print "Test machine is:" + temp1
@@ -112,9 +112,9 @@ if __name__ == '__main__':
                     #csvString += "\n"
             #print csvString + '\n'
             csvString += flavour
-            if(len(csvString)<100):
-		csvString = ""
-		continue
+            #if(len(csvString)<100):
+		#csvString = ""
+		#continue
 	    output_file.write(unicode(csvString + "\n"))
             csvString = ""
             #break
