@@ -129,7 +129,6 @@ public static List<Customer> getCustomerInfo(String customerInfoFile)
 	int id;
 	HighLevelSla sla;
 	String custClass;
-
 	try
 		{
 		br = new BufferedReader(new FileReader(csvFile));
