@@ -225,8 +225,8 @@ public static RunParams getRunParams(String runParamsFile)
     
   }
 
-  void ML(){
-	    
+  String ML(){
+	    return "micro";
   }
   
   void simulate(String strat, String family){
@@ -331,6 +331,7 @@ public static RunParams getRunParams(String runParamsFile)
 						  }
 						  
 						 if(running_agg_avg - cur_perf > delta){
+							 // TODO based on VM perf , cost , perf threshold decide whether to move to other family or other processor
 							 System.out.println("Migrating type "+ family +" because "+running_agg_avg +" > "+ cur_perf);
 							 launch_instance(family, num_instances+num_migrated, i, time);
 							 num_migrated++;
@@ -363,6 +364,7 @@ public static RunParams getRunParams(String runParamsFile)
 	  //Loop through all of num_instances
 	  for(Instance inst : allInstances){
 		  if(inst.active==1){
+			  //TODO call someother kill function which checks collaborator logic and accordingly kills
 			  kill_instance(inst, time);
 		  }
 		  System.out.println("inst total work "+ inst.totalWork);
@@ -540,23 +542,11 @@ long get_rand(){
   
 
   public static void main(String args[]){
-	  //get_rand();
 	  Simulator sim = new Simulator("ner1-config", "runConfig.prop", "custInfo.csv");
-	  sim.simulate("CPU", "micro");
+	  //TODO call simulate for each customer
+	  sim.simulate("CPU",sim.ML());
     
-    //read file for cloud distribution + create instances
-    
-    //read the strategy prop file 
-    
-    //read SLA prop file 
-    
-    //call the ML module get the instance type
-    
-    //pass ML output as simulator input 
-    
-    //perform simulation based on strategy -> switch 
-    
-    //cleanup
+ 
   }
   
 }
