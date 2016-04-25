@@ -13,7 +13,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
 
-enum Stratergy{
+enum Strategy{
   CPU,
   UPFRONT,
   UPFRONT_OPREP,
@@ -257,7 +257,7 @@ public static RunParams getRunParams(String runParamsFile)
 		  num_instances++;
 	  }
 	  
-	  Stratergy s= Stratergy.valueOf(strat);
+	  Strategy s= Strategy.valueOf(strat);
 	  switch(s){
 	  	case CPU_OPREP:
 	  		running_agg_avg=0;
@@ -284,9 +284,9 @@ public static RunParams getRunParams(String runParamsFile)
 	  
 	  //end up-front exploration
 	  if(T>0 && B>0){
-		  if(Stratergy.CPU.equals(s)|| Stratergy.MAX_CPU.equals(s))
+		  if(Strategy.CPU.equals(s)|| Strategy.MAX_CPU.equals(s))
 			  Collections.sort(allInstances,new InstanceComparatorType());
-		  else if (Stratergy.UPFRONT.equals(s)||Stratergy.UPFRONT_OPREP.equals(s))
+		  else if (Strategy.UPFRONT.equals(s)||Strategy.UPFRONT_OPREP.equals(s))
 			  Collections.sort(allInstances,new InstanceComparatorPerf());
 		  
 		 //kill B bad instances based on above stratergies
@@ -295,7 +295,7 @@ public static RunParams getRunParams(String runParamsFile)
 	  }
 	  
 	  //work with best A as of now and do opportunistic replacements
-	  if(Stratergy.CPU_OPREP.equals(s)|| Stratergy.UPFRONT_OPREP.equals(s)|| Stratergy.MAX_CPU.equals(s)){
+	  if(Strategy.CPU_OPREP.equals(s)|| Strategy.UPFRONT_OPREP.equals(s)|| Strategy.MAX_CPU.equals(s)){
 		  for(int i=1;i<T-1;i++){
 			  System.out.println("Time = "+time/units);
 			  delta=mu*(m/units)/(T-i);
@@ -311,7 +311,7 @@ public static RunParams getRunParams(String runParamsFile)
 				  }
 				  
 				  if(inst.active==1){
-					  if(Stratergy.CPU_OPREP.equals(s)|| Stratergy.UPFRONT_OPREP.equals(s)){
+					  if(Strategy.CPU_OPREP.equals(s)|| Strategy.UPFRONT_OPREP.equals(s)){
 						  switch(s){
 						  case CPU_OPREP:
 							  cur_perf=mean;
@@ -338,7 +338,7 @@ public static RunParams getRunParams(String runParamsFile)
 							 kill_instance(inst, time);
 						 }
 					  }
-					  else if(Stratergy.MAX_CPU.equals(s)){
+					  else if(Strategy.MAX_CPU.equals(s)){
 						  if(inst.family!=null){
 							  System.out.println("Migrating type "+ family);
 							  launch_instance(family, num_instances+num_migrated, i, time);
@@ -390,8 +390,8 @@ public static RunParams getRunParams(String runParamsFile)
 	  System.out.println("Effective rate "+ aggregate_perf);
 	  System.out.println("Naive total work "+ naive_total_work);
 	  System.out.println("Naive effective rate"+naive_aggregate_perf);
-	  System.out.println("Speedup "+aggregate_perf/naive_aggregate_perf);
-	  System.out.println("Percentage improvement "+(aggregate_perf/naive_aggregate_perf-1)*100);
+	  System.out.println("Speedup "+(double)aggregate_perf/(double)naive_aggregate_perf);
+	  System.out.println("Percentage improvement "+(double)(aggregate_perf/(double)naive_aggregate_perf-1)*100);
   }
 
 long get_rand(){
@@ -411,7 +411,7 @@ long get_rand(){
 		{
 			//System.out.println(data);
 			result = ByteBuffer.wrap(data).getInt();
-			System.out.println(result);
+			//System.out.println(result);
 			//return (int)data;
 		}
 	} catch (FileNotFoundException e) {
@@ -428,10 +428,20 @@ long get_rand(){
 	  float u1,u2,x,r;
 	  double PI=3.14159265358979323846d;
 	  //Random rand=new Random();
-	  long n1 = get_rand();
+	  long n1 = get_rand(); 
+	  long n2 = get_rand();
+/*	  while(true){
+		  n1 = get_rand();
+		  if(n1 < 0) break;
+		  else continue;
+	  }*/
 	  u1=n1/(float)maxRand;
 	  System.out.println("U1 random = " + n1);
-	  long n2 = get_rand();
+	/*  while(true){
+		  n2 = get_rand();
+		  if(n2 < 0) break;
+		  else continue;
+	  }*/
 	  u2=n2/(float)maxRand;
 	  System.out.println("U2 random = " + n2);
 	  //u1=rand.nextInt()/(float)maxRand;
@@ -509,9 +519,12 @@ long get_rand(){
 	  
 	  //select the instance of the given type randomly
 	  //Random rand= new Random();
-	  //int randomNum = rand.nextInt();
-	  //int randomNum=31;
 	  long n3 = get_rand();
+	/*  while(true){
+		  n3 = get_rand();
+		  if(n3 < 0) break;
+		  else continue;
+	  }*/
 	  System.out.println("runFrac random = " + n3);
 	  runFrac=(double)(1-(double)n3)/(double)maxRand;
 	  for(CloudDistribution cd:instanceMap.get(whichFamily)){

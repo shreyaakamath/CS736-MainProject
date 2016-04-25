@@ -1,10 +1,9 @@
 strategy=2
 time=24
 quantum=3600
-units=seconds
 A=10
 B=10
-migrationPenality=2
+migrationPenality=180
 expectedNoOfReMig=2
 alphaAgg=0
 alphaServ=1
