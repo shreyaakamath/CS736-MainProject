@@ -398,12 +398,14 @@ public void start(){
 	  PredictFamily MLObj = new PredictFamily("custInfo.csv", "custInfoAfterPrediction.csv");
 	  HashMap<String,List<CloudDistribution>> instanceMap=Helper.getDistribution("ner1-config");
 	  List<Customer> customerInfoList=Helper.getCustomerInfo(MLObj.getOutputFilename());
+	  //List<Customer> customerInfoList=Helper.getCustomerInfo("custInfoAfterPrediction.csv");
+	  //List<Customer> customerInfoList=Helper.getCustomerInfo("custInfo.csv");
 	  RunParams simulatorRunParameters=Helper.getRunParams("runConfig.prop");
 	  HashMap<String,List<Integer>> custBasedOnClass = Helper.getClassifiedCust(customerInfoList);
 	  
 	  
 	  for(Customer c : customerInfoList){
-		  c.predictedFamily="micro";
+//		  c.predictedFamily="micro";
 		  Simulator sim = new Simulator(instanceMap,simulatorRunParameters,Strategy.values()[simulatorRunParameters.strategy].toString(),c,custBasedOnClass);
 		  sim.start();
 	  }

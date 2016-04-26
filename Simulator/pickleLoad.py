@@ -14,7 +14,7 @@ print "Start of pickling"
 #print sys.argv[2]
 
 data_reader = csv.reader(open(sys.argv[1], "rb"))
-output_file = io.open(sys.argv[2], 'a')
+output_file = io.open(sys.argv[2], 'w')
 
 #print "Before readin ML obj"
 fileObj = open("testOutput", 'r')
