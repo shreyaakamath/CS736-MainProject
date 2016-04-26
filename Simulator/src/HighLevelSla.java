@@ -3,11 +3,11 @@ public class HighLevelSla {
 	double requestsPerSecond;
 	double timePerReq;
 	double transferRate;
-	int concurrency;
-	int totalTime;
+	double concurrency;
+	double totalTime;
 	  
 	public HighLevelSla(double requestsPerSecond, double timePerReq,
-			double transferRate, int concurrency,int totalTime) {
+			double transferRate, double concurrency,double totalTime) {
 		super();
 		this.requestsPerSecond = requestsPerSecond;
 		this.timePerReq = timePerReq;
@@ -34,10 +34,10 @@ public class HighLevelSla {
 	public void setTransferRate(double transferRate) {
 		this.transferRate = transferRate;
 	}
-	public int getConcurrency() {
+	public double getConcurrency() {
 		return concurrency;
 	}
-	public void setConcurrency(int concurrency) {
+	public void setConcurrency(double concurrency) {
 		this.concurrency = concurrency;
 	}
 	

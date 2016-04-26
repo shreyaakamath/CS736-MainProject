@@ -1,17 +1,11 @@
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Random;
 
 enum Strategy{
   CPU,
@@ -28,208 +22,42 @@ enum enumClass{
 	enterprise
 }
 
-public class Simulator {
-  RunParams simulatorRunParameters;
-  HashMap<String,List<CloudDistribution>> instanceMap;
-  List<Customer> customerInfoList;
-  HighLevelSla sla;
-  List<Instance> allInstances;
-  List<Instance> naiveInstances;
-  static long maxRand = 4294967295l;
-  List<Customer> allCustomer;
-  int random1 =11;
-  int random2 =21;
+
+public class Simulator implements Runnable {
+	Thread t ;
+  	RunParams simulatorRunParameters;
+  	HashMap<String,List<CloudDistribution>> instanceMap;
+  	List<Instance> allInstances;
+  	List<Instance> naiveInstances;
+  	HashMap<String,List<Integer>> custBasedOnClass;
+  	Customer c;
+  	static long maxRand = 4294967295l;
+  	String strat;
+  	String family;
+  	int id;
   
-  Simulator(String distributionFile,String runParamsFile,String customerFile){
+  Simulator(HashMap<String,List<CloudDistribution>> instanceMap,RunParams simulatorRunParameters,String strat,Customer c,HashMap<String,List<Integer>> custBasedOnClass){
+	  this.instanceMap=instanceMap;
+	  this.simulatorRunParameters=simulatorRunParameters;
 	  allInstances=new ArrayList<Instance>();
 	  naiveInstances=new ArrayList<Instance>();
-	  
-	 instanceMap=getDistribution(distributionFile);
-	 customerInfoList=getCustomerInfo(customerFile);
-	 simulatorRunParameters=getRunParams(runParamsFile);
-  	 
+	  this.strat=strat;
+	  this.family=c.predictedFamily;
+	  this.id=c.id;
+	  this.custBasedOnClass=custBasedOnClass;
+	  this.c=c;
   }
-
-public void test(){
-	  for (Entry<String, List<CloudDistribution>> entry : instanceMap.entrySet()) { 
-	  System.out.println(entry.getKey() + entry.getValue()); for (CloudDistribution
-	  eachInstance : entry.getValue()) { System.out.println(eachInstance.toString()); } }
-	for (Customer eachCustomer : customerInfoList) { System.out.println(eachCustomer.toString()); }
-	System.out.println(simulatorRunParameters.toString());
+public void start(){
+	if (t == null)
+    {
+       t = new Thread (this, family);
+       t.start ();
+    }
 }
+ 
+ 
   
-public static HashMap<String, List<CloudDistribution>> getDistribution(String distributionFile) {
-	// Row format is : type,processor,fraction,mean,stddev
-	HashMap<String, List<CloudDistribution>> instanceMap = new HashMap<String, List<CloudDistribution>>();
-	String csvFile = distributionFile;
-	BufferedReader br = null;
-	String line = "";
-	String cvsSplitBy = ",";
-	CloudDistribution eachInstance = null;
-	String type, processor;
-	double fraction, mean, stdDev;
-
-	try {
-		br = new BufferedReader(new FileReader(csvFile));
-		while ((line = br.readLine()) != null) {
-			// use comma as separator
-			String[] row = line.split(cvsSplitBy);
-			type = String.valueOf(row[0]);
-			processor = String.valueOf(row[1]);
-			fraction = Double.parseDouble(row[2]);
-			mean = Double.parseDouble(row[3]);
-			stdDev = Double.parseDouble(row[4]);
-			eachInstance = new CloudDistribution(type, processor, fraction, mean, stdDev);
-			if(instanceMap.get(type) != null) {
-				instanceMap.get(type).add(eachInstance);
-				}
-			else
-				{
-				List<CloudDistribution> instancesInATypeList = new ArrayList<CloudDistribution>();
-				instancesInATypeList.add(eachInstance);
-				instanceMap.put(type, instancesInATypeList);
-				}
-			}
-		}
-	catch(FileNotFoundException e) {
-		e.printStackTrace();
-		}
-	catch(IOException e) {
-		e.printStackTrace();
-		}
-	finally {
-		if(br != null)
-			{
-			try
-				{
-				br.close();
-				}
-			catch(IOException e)
-				{
-				e.printStackTrace();
-				}
-			}
-		}
-	return instanceMap;
-
-	}
-
-public static List<Customer> getCustomerInfo(String customerInfoFile)
-	{
-	// id, class, reqPerSec, concurrency, timePerReq, transferRate, totalTime
-	HighLevelSla custSLA = null;
-	Customer eachCustomer = null;
-	List<Customer> custInfoList = new ArrayList<Customer>();
-	String csvFile = customerInfoFile;
-	BufferedReader br = null;
-	String line = "";
-	String cvsSplitBy = ",";
-
-	double reqPerSecond;
-	double timePerReq;
-	double transferRate;
-	int concurrency;
-	int totalTime;
-
-	int id;
-	HighLevelSla sla;
-	String custClass;
-	try
-		{
-		br = new BufferedReader(new FileReader(csvFile));
-		while ((line = br.readLine()) != null)
-			{
-			// use comma as separator
-			String[] row = line.split(cvsSplitBy);
-			//System.out.println(line);
-			//System.out.println(row[0] + " " + row[1] + " " + row[2] + " " + row[3] + " " + row[4] + " " + row[5] + " " + row[6]);
-			id = Integer.parseInt(row[0]);
-			custClass = row[1];
-			reqPerSecond = Double.parseDouble(row[2]);
-			concurrency = Integer.parseInt(row[3]);
-			timePerReq = Double.parseDouble(row[4]);
-			transferRate = Double.parseDouble(row[5]);
-			totalTime = Integer.parseInt(row[6]);
-
-			custSLA = new HighLevelSla(reqPerSecond, timePerReq, transferRate, concurrency, totalTime);
-			eachCustomer = new Customer(id, custSLA, custClass);
-			custInfoList.add(eachCustomer);
-			}
-		}
-	catch(FileNotFoundException e)
-		{
-		e.printStackTrace();
-		}
-	catch(IOException e)
-		{
-		e.printStackTrace();
-		}
-	finally
-		{
-		if(br != null)
-			{
-			try
-				{
-				br.close();
-				}
-			catch(IOException e)
-				{
-				e.printStackTrace();
-				}
-			}
-		}
-	return custInfoList;
-	}
-
-public static RunParams getRunParams(String runParamsFile)
-	{
-	int strategy;
-	int time;
-	int quantum;
-	int A;
-	int B;
-	int migrationPenality;
-	int expectedNoOfReMig;
-	int alphaAgg;
-	int alphaServ;
-	RunParams simulatorRunParameters = null;
-	try
-		{
-		Properties prop = new Properties();
-		prop.load(new FileInputStream(runParamsFile));
-		
-		strategy = Integer.parseInt(prop.getProperty("strategy"));
-		time = Integer.parseInt(prop.getProperty("time"));
-		quantum = Integer.parseInt(prop.getProperty("quantum"));
-		A = Integer.parseInt(prop.getProperty("A"));
-		B = Integer.parseInt(prop.getProperty("B"));
-		migrationPenality = Integer.parseInt(prop.getProperty("migrationPenality"));
-		expectedNoOfReMig = Integer.parseInt(prop.getProperty("expectedNoOfReMig"));
-		alphaAgg = Integer.parseInt(prop.getProperty("alphaAgg"));
-		alphaServ = Integer.parseInt(prop.getProperty("alphaServ"));
-		simulatorRunParameters = new RunParams(strategy, time, quantum,  A, B, migrationPenality, expectedNoOfReMig, alphaAgg, alphaServ);
-		}
-	catch(Exception e)
-		{
-		e.printStackTrace();
-		}
-	return simulatorRunParameters;
-	}
-
-  /*from scratch*/
-  void collaborator(){
-    
-  }
-  
-  void feedback(){
-    
-  }
-
-  String ML(){
-	    return "micro";
-  }
-  
-  void simulate(String strat, String family){
+ public void run(){
 	  
 	  int time = 0; 
 	  int num_instances = 0;
@@ -273,11 +101,6 @@ public static RunParams getRunParams(String runParamsFile)
 	  first_avg=running_agg_avg;
 	  
 	  //copy A units to naive stratergy
-	  /*naiveInstances=new ArrayList<Instance>();
-	  for(Instance inst:allInstances){
-		  Instance i1 = new Instance(inst.id, inst.family, inst.proccessor, inst.active, inst.startTime, inst.startQuantum);
-		  naiveInstances.add(i1);
-	  }*/
 	  naiveInstances= new ArrayList<Instance>(allInstances);
 	  int units=simulatorRunParameters.quantum;
 	  time+=units;
@@ -291,7 +114,7 @@ public static RunParams getRunParams(String runParamsFile)
 		  
 		 //kill B bad instances based on above stratergies
 		  for(int i=A;i<A+B;i++)
-			  kill_instance(allInstances.get(i), time);
+			  calcPerfStateAndKill(allInstances.get(i), time);
 	  }
 	  
 	  //work with best A as of now and do opportunistic replacements
@@ -322,8 +145,8 @@ public static RunParams getRunParams(String runParamsFile)
 							  cur_agg_perf = calc_curr_agg_perf(i, allInstances.size());
 							  running_agg_avg=alphaAgg*cur_agg_perf+(1-alphaAgg)*running_agg_avg;
 							  if(j>1)
-							  inst.cufPerf=alphaServ * inst.perf[i]+(1-alphaServ)*allInstances.get(j-1).cufPerf;
-							  cur_perf=inst.cufPerf;
+							  inst.curPerf=alphaServ * inst.perf[i]+(1-alphaServ)*allInstances.get(j-1).curPerf;
+							  cur_perf=inst.curPerf;
 							  break;
 						default:
 							System.out.println("error unknown strategy ");
@@ -335,7 +158,7 @@ public static RunParams getRunParams(String runParamsFile)
 							 System.out.println("Migrating type "+ family +" because "+running_agg_avg +" > "+ cur_perf);
 							 launch_instance(family, num_instances+num_migrated, i, time);
 							 num_migrated++;
-							 kill_instance(inst, time);
+							 calcPerfStateAndKill(inst, time);
 						 }
 					  }
 					  else if(Strategy.MAX_CPU.equals(s)){
@@ -343,7 +166,7 @@ public static RunParams getRunParams(String runParamsFile)
 							  System.out.println("Migrating type "+ family);
 							  launch_instance(family, num_instances+num_migrated, i, time);
 							  num_migrated++;
-						      kill_instance(inst, time);
+						      calcPerfStateAndKill(inst, time);
 						  }
 					  }
 				  }
@@ -363,9 +186,9 @@ public static RunParams getRunParams(String runParamsFile)
 	  
 	  //Loop through all of num_instances
 	  for(Instance inst : allInstances){
+		  
 		  if(inst.active==1){
-			  //TODO call someother kill function which checks collaborator logic and accordingly kills
-			  kill_instance(inst, time);
+			  collaborate(inst,time);
 		  }
 		  System.out.println("inst total work "+ inst.totalWork);
 		  total_work+=inst.totalWork;
@@ -374,12 +197,13 @@ public static RunParams getRunParams(String runParamsFile)
 	  System.out.println("done with current strategy, killing naive instances");
 	  time=units*T;
 	  for(int i=0;i<A;i++){
-		  kill_instance(naiveInstances.get(i), time);
+		  calcPerfStateAndKill(naiveInstances.get(i), time);
 		  naive_total_work+=naiveInstances.get(i).totalWork;
 	  }
 	  
 	  aggregate_perf=total_work/(float)((A*T+B)*units);
 	  naive_aggregate_perf=naive_total_work/(A*T*units);
+	  System.out.println("Printing for customer ------------"+id);
 	  System.out.println(s.name()+" "+T+" "+units+" "+A+" "+B+" "+m+" "+mu+" "+alphaAgg+" "+alphaServ);
 	  System.out.println("Naive perfs:"+ naive_total_work);  //their code has printed total_work ??
 	  for(Instance inst: naiveInstances) System.out.println(inst.family+" "+inst.id+" "+ inst.avgPerf+" total work -"+inst.totalWork+" total time "+inst.totalTime);
@@ -394,28 +218,52 @@ public static RunParams getRunParams(String runParamsFile)
 	  System.out.println("Percentage improvement "+(double)(aggregate_perf/(double)naive_aggregate_perf-1)*100);
   }
 
-long get_rand(){
+ void collaborate(Instance instToKill,int time){
+	 calcPerfStateAndKill(instToKill, time);
+	 float threashold = 5;
+	 if(instToKill.curPerf > threashold){
+		//this instance has good performance , lets give to a customer of the same class
+		List<Integer> custSameClass = custBasedOnClass.get(c.custClass);
+		for(Instance inst : allInstances){
+			//dont swap with same instance
+			if(inst.id== instToKill.id) continue;
+			if(inst.active ==1){
+				//if instance is active and belongs to cust from same class
+				if (custSameClass.contains(inst.customerId)){
+					threashold=20;
+					if(inst.curPerf < threashold){
+						System.out.println("==================swapping =========================");
+						//and this instance has below threshold performance so can swap
+						swapInstance(instToKill,inst);
+						break;
+					}
+				}
+			}
+		}
+	 }else{
+		 //since this instances perf if below threshold we will not swap it with anything else
+		 calcPerfStateAndKill(instToKill, time);
+	 }
+ }
+ 
+ void swapInstance(Instance original , Instance next){
+	 next.proccessor=original.proccessor;
+ }
+   long get_rand(){
 	  long result = 0;
 	  try {
 		FileInputStream randomFile = new FileInputStream("/dev/urandom");
-		long ret;
-		int numread = 102;
 		byte[] data = new byte[4]; 
 		try {
 			randomFile.read(data);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if(data !=  null)
 		{
-			//System.out.println(data);
 			result = ByteBuffer.wrap(data).getInt();
-			//System.out.println(result);
-			//return (int)data;
 		}
 	} catch (FileNotFoundException e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
 	  return result; 
@@ -436,14 +284,14 @@ long get_rand(){
 		  else continue;
 	  }*/
 	  u1=n1/(float)maxRand;
-	  System.out.println("U1 random = " + n1);
+//	  System.out.println("U1 random = " + n1);
 	/*  while(true){
 		  n2 = get_rand();
 		  if(n2 < 0) break;
 		  else continue;
 	  }*/
 	  u2=n2/(float)maxRand;
-	  System.out.println("U2 random = " + n2);
+//	  System.out.println("U2 random = " + n2);
 	  //u1=rand.nextInt()/(float)maxRand;
 	  //u2=rand.nextInt()/(float)maxRand;
 	  
@@ -471,12 +319,9 @@ long get_rand(){
 	  
 	  return aggPerf/(float)numActive;
   }
-  /**
-   * 
-   * @param inst -> instance to be killed
-   * @param time -> current time
-   */
-  void kill_instance(Instance inst, int time){
+  
+
+  void calcPerfStateAndKill(Instance inst, int time){
 	    int t,runtime=0;
 	    inst.endTime=time;
 	    inst.totalTime=inst.endTime-inst.startTime;
@@ -498,6 +343,9 @@ long get_rand(){
 	    inst.avgPerf=(float)inst.totalWork/(float)inst.totalTime;
 	    System.out.println("Killing instance of type "+inst.family+" id="+inst.id);
 	  }
+
+  
+
   
   /**
    * Launch an instance and update all internal data structures
@@ -518,14 +366,8 @@ long get_rand(){
 	  //TODO check if no of instances is greater than max possible instances
 	  
 	  //select the instance of the given type randomly
-	  //Random rand= new Random();
 	  long n3 = get_rand();
-	/*  while(true){
-		  n3 = get_rand();
-		  if(n3 < 0) break;
-		  else continue;
-	  }*/
-	  System.out.println("runFrac random = " + n3);
+//	  System.out.println("runFrac random = " + n3);
 	  runFrac=(double)(1-(double)n3)/(double)maxRand;
 	  for(CloudDistribution cd:instanceMap.get(whichFamily)){
 		  cumFrac+=cd.fraction;
@@ -538,7 +380,7 @@ long get_rand(){
 	  }
     
 	  //add this given instance to the instance variable lists
-	  Instance inst= new Instance(id, whichFamily, whichProcessor, 1, time, t);
+	  Instance inst= new Instance(id, whichFamily, whichProcessor, 1, time, t,c.id);
 	  allInstances.add(inst);
 	  
 	  //TODO bimodal frac 
@@ -547,19 +389,24 @@ long get_rand(){
 	  for(int i=0;i<quantaForSimulation;i++){
 		  inst.perf[i]=stddev*gen_std_normal()+mean;
 	  }
-	  inst.cufPerf=inst.perf[t];
-	  
-	  //print info
-	  System.out.println("Launching instance of family "+whichFamily+", processor"+whichProcessor+" id "+id+"Performance of launched instance "+inst.cufPerf);
+	  inst.curPerf=inst.perf[t];
+	  System.out.println("Launching instance of family "+whichFamily+", processor"+whichProcessor+" id "+id+"Performance of launched instance "+inst.curPerf);
   }
   
-
+  
   public static void main(String args[]){
-	  Simulator sim = new Simulator("ner1-config", "runConfig.prop", "custInfo.csv");
-	  //TODO call simulate for each customer
-	  sim.simulate("CPU",sim.ML());
-    
- 
+	  PredictFamily MLObj = new PredictFamily("custInfo.csv", "custInfoAfterPrediction.csv");
+	  HashMap<String,List<CloudDistribution>> instanceMap=Helper.getDistribution("ner1-config");
+	  List<Customer> customerInfoList=Helper.getCustomerInfo(MLObj.getOutputFilename());
+	  RunParams simulatorRunParameters=Helper.getRunParams("runConfig.prop");
+	  HashMap<String,List<Integer>> custBasedOnClass = Helper.getClassifiedCust(customerInfoList);
+	  
+	  
+	  for(Customer c : customerInfoList){
+		  c.predictedFamily="micro";
+		  Simulator sim = new Simulator(instanceMap,simulatorRunParameters,Strategy.values()[simulatorRunParameters.strategy].toString(),c,custBasedOnClass);
+		  sim.start();
+	  }
   }
-  
 }
+

@@ -14,11 +14,12 @@ public class Instance {
 	double totalTimeComputation;
 	int totalWork;
 	float avgPerf;
-	double cufPerf;
+	double curPerf;
 	double perf[];//max time quantum
+	int customerId;
 	
 	public Instance(int id, String family,String processor, int active, int startTime,
-			int startQuantum ) {
+			int startQuantum , int custId) {
 		super();
 		this.id = id;
 		this.family= family;
@@ -27,8 +28,8 @@ public class Instance {
 		this.startTime = startTime;
 		this.startQuantum = startQuantum;
 		perf=new double[1000];
+		this.customerId=custId;
 	}
-	
 	
 }
 
