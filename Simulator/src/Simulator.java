@@ -118,7 +118,7 @@ public class Simulator {
 		  
 		 //kill B bad instances based on above stratergies
 		  for(int i=A;i<A+B;i++)
-			  calcPerfStateAndKill(allInstances.get(i), time);
+			  calcPerfStateAndKill(allInstances.get(i), time,true);
 	  }
 	  
   }
@@ -172,7 +172,7 @@ public class Simulator {
 						 System.out.println("Migrating type "+ family +" because "+running_agg_avg +" > "+ cur_perf);
 						 launch_instance(num_instances+num_migrated, i, time);
 						 num_migrated++;
-						 calcPerfStateAndKill(inst, time);
+						 calcPerfStateAndKill(inst, time,true);
 		
 					 }
 				  }
@@ -181,7 +181,7 @@ public class Simulator {
 						  System.out.println("Migrating type "+ family);
 						  launch_instance(num_instances+num_migrated, i, time);
 						  num_migrated++;
-					      calcPerfStateAndKill(inst, time);
+					      calcPerfStateAndKill(inst, time,true);
 					  }
 				  }
 			  }
@@ -210,7 +210,7 @@ public class Simulator {
 	  for(Instance inst : allInstances){
 		  
 		  if(inst.active==1){
-			  calcPerfStateAndKill(inst,time);
+			  calcPerfStateAndKill(inst,time,true);
 		  }
 		  System.out.println("Instance family= "+ inst.family+"processor= "+inst.proccessor+" total work "+ inst.totalWork);
 		  
@@ -220,7 +220,7 @@ public class Simulator {
 	  System.out.println("Done with current strategy, killing naive instances");
 	  time=units*T;
 	  for(int i=0;i<A;i++){
-		  calcPerfStateAndKill(naiveInstances.get(i), time);
+		  calcPerfStateAndKill(naiveInstances.get(i), time,true);
 		  naive_total_work+=naiveInstances.get(i).totalWork;
 	  }
 	  
@@ -273,10 +273,10 @@ public class Simulator {
 	  float u1,u2,x,r;
 	  double PI=3.14159265358979323846d;
 	  //Random rand=new Random();
-//	  long n1 = get_rand(); 
-//	  long n2 = get_rand();
-	  long n1 = 10; 
-	  long n2 = 10;
+	  long n1 = get_rand(); 
+	  long n2 = get_rand();
+//	  long n1 = 10; 
+//	  long n2 = 10;
 /*	  while(true){
 		  n1 = get_rand();
 		  if(n1 < 0) break;
@@ -322,7 +322,7 @@ public class Simulator {
   }
   
 
-  void calcPerfStateAndKill(Instance inst, int time){
+  void calcPerfStateAndKill(Instance inst, int time,boolean collaborate){
 	    int t,runtime=0;
 	    inst.endTime=time;
 	    inst.totalTime=inst.endTime-inst.startTime;
@@ -345,11 +345,13 @@ public class Simulator {
 	    
 	    //update collaborator module with stats.
 	    //TODO this should be updated with the new mean values for each of the SLAs
-	    String combo=inst.family+"-"+inst.proccessor;
-	    Collaborator c1=collaboratorMap.get(combo);
-	    System.out.println("Collaborator -- Killing instance now. Feeding back performance statistics to the database. Family= "+ inst.family+" Processor= "+inst.proccessor);
-	    c1.update(c1.requestsPerSecond, c1.timePerReq, c1.transferRate, c1.concurrency, c1.totalTime);
-	    collaboratorMap.put(combo, c1);
+	    if(collaborate){
+		    String combo=inst.family+"-"+inst.proccessor;
+		    Collaborator c1=collaboratorMap.get(combo);
+		    System.out.println("Collaborator -- Killing instance now. Feeding back performance statistics to the database. Family= "+ inst.family+" Processor= "+inst.proccessor);
+		    c1.update(c1.requestsPerSecond, c1.timePerReq, c1.transferRate, c1.concurrency, c1.totalTime);
+		    collaboratorMap.put(combo, c1);
+	    }
 	    
 	    System.out.println("Killing instance of type "+inst.family+" id="+inst.id);
 	  }
@@ -362,9 +364,9 @@ public class Simulator {
    * @param cdInstance
    * @param id -> unique id for instance 
    * @param t -> current time unit
-   * @param time -> not sure ??
+   * @param time -> 
    */
-  Instance launch_instance(int id,int t, int time){
+  void launch_instance(int id,int t, int time){
 	  int threashold = currentCust.collaborateThreashold;
 	  int trials=0;
 	  
@@ -375,12 +377,12 @@ public class Simulator {
 	  double cumFrac=0;
 	  int quantaForSimulation=this.simulatorRunParameters.time;
 	  Instance inst=null;
-	  
+//	  int idBackup=id;
 	
 	  while(trials<threashold){
 		  //select the instance of the given type randomly
-		  //long n3 = get_rand();
-		  long n3 = -10;
+		  long n3 = get_rand();
+//		  long n3 = -10;
 		  runFrac=(double)(1-(double)n3)/(double)maxRand;
 		  for(CloudDistribution cd:instanceMap.get(family)){
 			  cumFrac+=cd.fraction;
@@ -393,11 +395,16 @@ public class Simulator {
 		  }
 		  //add this given instance to the instance variable lists. Use collaborator to try and get the best processor type for this family
 		  inst= new Instance(id, family, whichProcessor, 1, time, t,currentCust);
+		  allInstances.add(inst);
 		  String combo=family+"-"+whichProcessor;
 		  if(collaboratorMap.get(combo).getRank()!=1) {
 			  System.out.println("Collaborator --- Exploring for better processor type . Current processor="+whichProcessor+" current family= "+family+" Current trial =" +trials+" Max trials for this customer= "+ threashold );
 			  trials++;
-			  continue;
+			  if(trials<threashold) {
+				  calcPerfStateAndKill(inst, time+simulatorRunParameters.quantum, false);
+				  num_instances++;
+				  continue;
+			  }
 		  }
 		  else{
 			  System.out.println("Collaborator -- Not exploring for better processor.Current processor="+whichProcessor+" current family= "+family+" Current trial =" +trials+" Max trials for this customer= "+ threashold );
@@ -405,7 +412,7 @@ public class Simulator {
 		  }
 	  }
 	  
-	  allInstances.add(inst);
+//	  allInstances.add(inst);
 	  
 	  //set performance parameters
 	  for(int i=0;i<quantaForSimulation;i++){
@@ -413,7 +420,6 @@ public class Simulator {
 	  }
 	  inst.curPerf=inst.perf[t];
 	  System.out.println("Launching instance of family "+family+", processor"+whichProcessor+" id "+id+"Performance of launched instance "+inst.curPerf);
-	  return inst;
   }
   
   
