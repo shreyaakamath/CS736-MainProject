@@ -1,0 +1,47 @@
+micro for client side:
+Nqueens
+
+scp shruthir@adelie-01.cs.wisc.edu:/afs/cs.wisc.edu/u/s/h/shruthir/Spring-2016/Adv-OS/CS736-MainProject/getData.sh
+scp shruthir@adelie-01.cs.wisc.edu:/afs/cs.wisc.edu/u/s/h/shruthir/Spring-2016/Adv-OS/AWS/cs736_micro_iperf.pem ./
+
+
+
+small 1:
+scp shruthir@adelie-01.cs.wisc.edu:/afs/cs.wisc.edu/u/s/h/shruthir/Spring-2016/Adv-OS/CS736-MainProject/installWebServices.sh ./
+
+
+./getData.sh small1 52.38.64.194 "ec2-52-38-64-194.us-west-2.compute.amazonaws.com" cs736_micro_iperf.pem
+./getData.sh small2 52.38.107.208 "ec2-52-38-107-208.us-west-2.compute.amazonaws.com" cs736_micro_iperf.pem
+./getData.sh small3 52.10.223.187 "ec2-52-10-223-187.us-west-2.compute.amazonaws.com" cs736_micro_iperf.pem
+
+
+
+0 filename
+1 server
+2 serverIP	
+3 doclength	
+4 concurrency	
+5 time	
+6 compreq	
+7 failreq	
+8 tottran	
+9 htmltran	
+10 reqpersec	
+11 timeperreqall	
+12 timeperreq	
+13 transrate	
+14 type
+
+small3_nginx_c_990	lighttpd/1.4.33	52.10.223.187	3568	99	0.733	1000	0	3825000	3568000	1363.70	72.597	0.733	5093.89	small3\
+
+
+id, class, concurrency,time,reqpersec,timerperreq,transrate
+45,enterprise,99,0.733,1363.70,0.733,5093.89    -   small
+65,basic,92,0.350,2853.38,0.350,2376.88			-   nano
+
+
+filename                server                          serverIP        doclength       concurrency     time    compreq failreq tottran htmltran        reqpersec       timeperreqall   timeperreq      transrate       type
+small3_nginx_c_990      lighttpd/1.4.33                 52.10.223.187   3568            99              0.733   1000    0       3825000 3568000         1363.70         72.597          0.733           5093.89         small3
+nano3_nginx_c_920       nginx/1.4.6                     54.186.197.35   612             92              0.350   1000    0       853000  612000          2853.38         32.243          0.350           2376.88         nano3
+
+                                                                                                                                                               
