@@ -3,6 +3,7 @@ public class Customer{
 	HighLevelSla sla;
 	String custClass;
 	String predictedFamily;
+	int collaborateThreashold;
 	  
 	public int getId() {
 		return id;
@@ -36,12 +37,13 @@ public class Customer{
 		this.predictedFamily = predictedFamily;
 	}
 		
-  public Customer(int id, HighLevelSla sla, String custClass,String predicted) {
+  public Customer(int id, HighLevelSla sla, String custClass,String predicted,int collaborateThreashold) {
 	super();
 	this.id = id;
 	this.sla = sla;
 	this.custClass = custClass;
 	this.predictedFamily=predicted;
+	this.collaborateThreashold=collaborateThreashold;
 }
   public String toString() {
 		return("Id: " + this.id + " SLA: " + this.sla + " Class: " + this.custClass);

@@ -22,71 +22,75 @@ enum enumClass{
 	enterprise
 }
 
+enum Family{
+	nano,
+	micro,
+	small
+}
 
-public class Simulator implements Runnable {
-	Thread t ;
+public class Simulator {
+	
+	HashMap<String,Integer> familyMap;
+	HashMap<Integer,String> revFamilyMap;
   	RunParams simulatorRunParameters;
   	HashMap<String,List<CloudDistribution>> instanceMap;
   	List<Instance> allInstances;
   	List<Instance> naiveInstances;
   	HashMap<String,List<Integer>> custBasedOnClass;
-  	Customer c;
+  	Customer currentCust;
   	static long maxRand = 4294967295l;
-  	String strat;
+  	String stratStr;
   	String family;
-  	int id;
+  	Strategy currStratObj;
+  	int num_instances;
+  	int time;
+  	float first_avg;
+  	int num_migrated;
+  	HashMap<String,Collaborator> collaboratorMap;
   
-  Simulator(HashMap<String,List<CloudDistribution>> instanceMap,RunParams simulatorRunParameters,String strat,Customer c,HashMap<String,List<Integer>> custBasedOnClass){
+  Simulator(HashMap<String,List<CloudDistribution>> instanceMap,RunParams simulatorRunParameters,String strat,Customer c,HashMap<String,List<Integer>> custBasedOnClass,HashMap<String,Collaborator> collaboratorMap){
 	  this.instanceMap=instanceMap;
 	  this.simulatorRunParameters=simulatorRunParameters;
 	  allInstances=new ArrayList<Instance>();
 	  naiveInstances=new ArrayList<Instance>();
-	  this.strat=strat;
+	  this.stratStr=strat;
 	  this.family=c.predictedFamily;
-	  this.id=c.id;
 	  this.custBasedOnClass=custBasedOnClass;
-	  this.c=c;
-  }
-public void start(){
-	if (t == null)
-    {
-       t = new Thread (this, family);
-       t.start ();
-    }
-}
- 
- 
-  
- public void run(){
+	  this.currentCust=c;
+	  this.collaboratorMap=collaboratorMap;
+	  currStratObj= Strategy.valueOf(strat);
+	  num_instances =0;
+	  time=0;
+	  first_avg = 0;
+	  num_migrated=0;
+	  familyMap = new HashMap<String,Integer>();
+	  revFamilyMap = new HashMap<Integer,String>();
 	  
-	  int time = 0; 
-	  int num_instances = 0;
-	  float total_work = 0;
-	  float aggregate_perf = 0;
-	  float naive_total_work = 0;
-	  float naive_aggregate_perf = 0;
-	  double cur_perf = 0;
-	  float first_avg = 0;
+	  int i=0;
+	  for(Family f : Family.values()){
+		  familyMap.put(f.toString(),i);
+		  revFamilyMap.put(i,f.toString());
+		  i++;
+	  }
+  }
+ 
+
+  public void simulateZero(){
+	  
 	  float running_agg_avg = 0;
-	  float cur_agg_perf = 0;
-	  float delta = 0;
-	  int num_migrated = 0;
 	  int A=simulatorRunParameters.A;
 	  int B=simulatorRunParameters.B;
 	  int T =simulatorRunParameters.time;
-	  int mu = simulatorRunParameters.expectedNoOfReMig;
-	  int m = simulatorRunParameters.migrationPenality;
-	  int alphaAgg=simulatorRunParameters.alphaAgg;
-	  int alphaServ=simulatorRunParameters.alphaServ;
+	  int units=simulatorRunParameters.quantum;
 	  
 	  //launch A+B instances 
 	  for(int i=0;i<A+B;i++){
-		  launch_instance(family, i, 0, time);
+		  launch_instance(i, 0, time);
 		  num_instances++;
 	  }
 	  
-	  Strategy s= Strategy.valueOf(strat);
-	  switch(s){
+	  
+	  switch(currStratObj){
 	  	case CPU_OPREP:
 	  		running_agg_avg=0;
 	  		for(CloudDistribution cd : instanceMap.get(family)){
@@ -102,14 +106,14 @@ public void start(){
 	  
 	  //copy A units to naive stratergy
 	  naiveInstances= new ArrayList<Instance>(allInstances);
-	  int units=simulatorRunParameters.quantum;
+	  
 	  time+=units;
 	  
 	  //end up-front exploration
 	  if(T>0 && B>0){
-		  if(Strategy.CPU.equals(s)|| Strategy.MAX_CPU.equals(s))
+		  if(Strategy.CPU.equals(currStratObj)|| Strategy.MAX_CPU.equals(currStratObj))
 			  Collections.sort(allInstances,new InstanceComparatorType());
-		  else if (Strategy.UPFRONT.equals(s)||Strategy.UPFRONT_OPREP.equals(s))
+		  else if (Strategy.UPFRONT.equals(currStratObj)||Strategy.UPFRONT_OPREP.equals(currStratObj))
 			  Collections.sort(allInstances,new InstanceComparatorPerf());
 		  
 		 //kill B bad instances based on above stratergies
@@ -117,84 +121,103 @@ public void start(){
 			  calcPerfStateAndKill(allInstances.get(i), time);
 	  }
 	  
+  }
+  
+  public void simulateNth(int i){
+	  int T =simulatorRunParameters.time;
+	  int mu = simulatorRunParameters.expectedNoOfReMig;
+	  int m = simulatorRunParameters.migrationPenality;
+	  int alphaAgg=simulatorRunParameters.alphaAgg;
+	  int alphaServ=simulatorRunParameters.alphaServ;
+	  int units=simulatorRunParameters.quantum;
+	  float delta = 0;
+	  
+	  double cur_perf = 0;
+	  float running_agg_avg = 0;
+	  float cur_agg_perf = 0;
+	  
 	  //work with best A as of now and do opportunistic replacements
-	  if(Strategy.CPU_OPREP.equals(s)|| Strategy.UPFRONT_OPREP.equals(s)|| Strategy.MAX_CPU.equals(s)){
-		  for(int i=1;i<T-1;i++){
-			  System.out.println("Time = "+time/units);
-			  delta=mu*(m/units)/(T-i);
-			  num_migrated=0;
-			  for(int j=0;j<allInstances.size();j++){
-				  Instance inst=allInstances.get(j);
-				  //get the mean from corresponding family/processor type
-				  double mean=0;
-				  for(CloudDistribution cd : instanceMap.get(inst.family)){
-					  if(cd.processor.equalsIgnoreCase(inst.proccessor)){
-						  mean=cd.mean;
-					  }
+//		  System.out.println("Time = "+time/units);
+		  delta=mu*(m/units)/(T-i);
+		  for(int j=0;j<num_instances;j++){
+			  Instance inst=allInstances.get(j);
+			  //get the mean from corresponding family/processor type
+			  double mean=0;
+			  for(CloudDistribution cd : instanceMap.get(inst.family)){
+				  if(cd.processor.equalsIgnoreCase(inst.proccessor)){
+					  mean=cd.mean;
 				  }
-				  
-				  if(inst.active==1){
-					  if(Strategy.CPU_OPREP.equals(s)|| Strategy.UPFRONT_OPREP.equals(s)){
-						  switch(s){
-						  case CPU_OPREP:
-							  cur_perf=mean;
-							  break;
-						  case UPFRONT_OPREP:
-							  //can add optimization to prevent many migrations
-							  //if(simulatorRunParameters.alphaAgg!=0)
-							  cur_agg_perf = calc_curr_agg_perf(i, allInstances.size());
-							  running_agg_avg=alphaAgg*cur_agg_perf+(1-alphaAgg)*running_agg_avg;
-							  if(j>1)
-							  inst.curPerf=alphaServ * inst.perf[i]+(1-alphaServ)*allInstances.get(j-1).curPerf;
-							  cur_perf=inst.curPerf;
-							  break;
-						default:
-							System.out.println("error unknown strategy ");
-							break;
-						  }
-						  
-						 if(running_agg_avg - cur_perf > delta){
-							 // TODO based on VM perf , cost , perf threshold decide whether to move to other family or other processor
-							 System.out.println("Migrating type "+ family +" because "+running_agg_avg +" > "+ cur_perf);
-							 launch_instance(family, num_instances+num_migrated, i, time);
-							 num_migrated++;
-							 calcPerfStateAndKill(inst, time);
-						 }
+			  }
+			  
+			  if(inst.active==1){
+				  if(Strategy.CPU_OPREP.equals(currStratObj)|| Strategy.UPFRONT_OPREP.equals(currStratObj)){
+					  switch(currStratObj){
+					  case CPU_OPREP:
+						  cur_perf=mean;
+						  break;
+					  case UPFRONT_OPREP:
+						  cur_agg_perf = calc_curr_agg_perf(i, allInstances.size());
+						  running_agg_avg=alphaAgg*cur_agg_perf+(1-alphaAgg)*running_agg_avg;
+						  if(j>1)
+						  inst.curPerf=alphaServ * inst.perf[i]+(1-alphaServ)*allInstances.get(j-1).curPerf;
+						  cur_perf=inst.curPerf;
+						  break;
+					default:
+						System.out.println("error unknown strategy ");
+						break;
 					  }
-					  else if(Strategy.MAX_CPU.equals(s)){
-						  if(inst.family!=null){
-							  System.out.println("Migrating type "+ family);
-							  launch_instance(family, num_instances+num_migrated, i, time);
-							  num_migrated++;
-						      calcPerfStateAndKill(inst, time);
-						  }
+					  
+					 if(running_agg_avg - cur_perf > delta){
+						
+						 System.out.println("Migrating type "+ family +" because "+running_agg_avg +" > "+ cur_perf);
+						 launch_instance(num_instances+num_migrated, i, time);
+						 num_migrated++;
+						 calcPerfStateAndKill(inst, time);
+		
+					 }
+				  }
+				  else if(Strategy.MAX_CPU.equals(currStratObj)){
+					  if(inst.family!=null){
+						  System.out.println("Migrating type "+ family);
+						  launch_instance(num_instances+num_migrated, i, time);
+						  num_migrated++;
+					      calcPerfStateAndKill(inst, time);
 					  }
 				  }
 			  }
-			  num_instances+=num_migrated;
-			  time+=units;
 		  }
+		  num_instances+=num_migrated;
 		  time+=units;
-	  }else{
-		  time+=units*(T-1);
-	  }
 	  
-	  if(time!=T*units){
-		  System.out.println("Error in simualtor code time!=T*units . Exiting");
-		  System.exit(0);
-	  }
+  }
+  
+  public void killAll(){
+	  float total_work = 0;
+	  int units=simulatorRunParameters.quantum;
+	  int T =simulatorRunParameters.time;
+	  int A=simulatorRunParameters.A;
+	  int B=simulatorRunParameters.B;
+	  int mu = simulatorRunParameters.expectedNoOfReMig;
+	  int m = simulatorRunParameters.migrationPenality;
+	  int alphaAgg=simulatorRunParameters.alphaAgg;
+	  int alphaServ=simulatorRunParameters.alphaServ;
+	  float aggregate_perf = 0;
+	  float naive_total_work = 0;
+	  float naive_aggregate_perf = 0;
 	  
-	  //Loop through all of num_instances
+	  
+	//Loop through all of num_instances
 	  for(Instance inst : allInstances){
 		  
 		  if(inst.active==1){
-			  collaborate(inst,time);
+			  calcPerfStateAndKill(inst,time);
 		  }
-		  System.out.println("inst total work "+ inst.totalWork);
+		  System.out.println("Instance family= "+ inst.family+"processor= "+inst.proccessor+" total work "+ inst.totalWork);
+		  
 		  total_work+=inst.totalWork;
 	  }
 	 
-	  System.out.println("done with current strategy, killing naive instances");
+	  System.out.println("Done with current strategy, killing naive instances");
 	  time=units*T;
 	  for(int i=0;i<A;i++){
 		  calcPerfStateAndKill(naiveInstances.get(i), time);
@@ -203,12 +226,12 @@ public void start(){
 	  
 	  aggregate_perf=total_work/(float)((A*T+B)*units);
 	  naive_aggregate_perf=naive_total_work/(A*T*units);
-	  System.out.println("Printing for customer ------------"+id);
-	  System.out.println(s.name()+" "+T+" "+units+" "+A+" "+B+" "+m+" "+mu+" "+alphaAgg+" "+alphaServ);
+	  System.out.println(currStratObj.name()+" "+T+" "+units+" "+A+" "+B+" "+m+" "+mu+" "+alphaAgg+" "+alphaServ);
 	  System.out.println("Naive perfs:"+ naive_total_work);  //their code has printed total_work ??
-	  for(Instance inst: naiveInstances) System.out.println(inst.family+" "+inst.id+" "+ inst.avgPerf+" total work -"+inst.totalWork+" total time "+inst.totalTime);
+//	  for(Instance inst: naiveInstances) System.out.println(inst.family+" "+inst.id+" "+ inst.avgPerf+" total work -"+inst.totalWork+" total time "+inst.totalTime);
 	  System.out.println("Number of instances "+ num_instances);
 	  System.out.println("Number migrated "+ (num_instances-A-B));
+	  System.out.println("num_migrated = "+num_migrated);
 	  System.out.println("First round average+ "+first_avg);
 	  System.out.println("Total work "+ total_work);
 	  System.out.println("Effective rate "+ aggregate_perf);
@@ -217,38 +240,8 @@ public void start(){
 	  System.out.println("Speedup "+(double)aggregate_perf/(double)naive_aggregate_perf);
 	  System.out.println("Percentage improvement "+(double)(aggregate_perf/(double)naive_aggregate_perf-1)*100);
   }
+  
 
- void collaborate(Instance instToKill,int time){
-	 calcPerfStateAndKill(instToKill, time);
-	 float threashold = 5;
-	 if(instToKill.curPerf > threashold){
-		//this instance has good performance , lets give to a customer of the same class
-		List<Integer> custSameClass = custBasedOnClass.get(c.custClass);
-		for(Instance inst : allInstances){
-			//dont swap with same instance
-			if(inst.id== instToKill.id) continue;
-			if(inst.active ==1){
-				//if instance is active and belongs to cust from same class
-				if (custSameClass.contains(inst.customerId)){
-					threashold=20;
-					if(inst.curPerf < threashold){
-						System.out.println("==================swapping =========================");
-						//and this instance has below threshold performance so can swap
-						swapInstance(instToKill,inst);
-						break;
-					}
-				}
-			}
-		}
-	 }else{
-		 //since this instances perf if below threshold we will not swap it with anything else
-		 calcPerfStateAndKill(instToKill, time);
-	 }
- }
- 
- void swapInstance(Instance original , Instance next){
-	 next.proccessor=original.proccessor;
- }
    long get_rand(){
 	  long result = 0;
 	  try {
@@ -263,9 +256,13 @@ public void start(){
 		{
 			result = ByteBuffer.wrap(data).getInt();
 		}
+		randomFile.close();
 	} catch (FileNotFoundException e) {
 		e.printStackTrace();
+	} catch (IOException e) {
+		e.printStackTrace();
 	}
+	  
 	  return result; 
   }
   /**
@@ -276,8 +273,10 @@ public void start(){
 	  float u1,u2,x,r;
 	  double PI=3.14159265358979323846d;
 	  //Random rand=new Random();
-	  long n1 = get_rand(); 
-	  long n2 = get_rand();
+//	  long n1 = get_rand(); 
+//	  long n2 = get_rand();
+	  long n1 = 10; 
+	  long n2 = 10;
 /*	  while(true){
 		  n1 = get_rand();
 		  if(n1 < 0) break;
@@ -294,9 +293,11 @@ public void start(){
 //	  System.out.println("U2 random = " + n2);
 	  //u1=rand.nextInt()/(float)maxRand;
 	  //u2=rand.nextInt()/(float)maxRand;
-	  
+//	  System.out.println("u1===="+u1);
 	  float log=(float)Math.log(u1);
+//	  System.out.println("log===="+log);
 	  x=(float)Math.sqrt(-2*log)*(float)Math.cos(2*PI*u2);
+//	  System.out.println("=========="+x);
 	  return x;
   }
  
@@ -341,6 +342,15 @@ public void start(){
 	    	}
 	    }
 	    inst.avgPerf=(float)inst.totalWork/(float)inst.totalTime;
+	    
+	    //update collaborator module with stats.
+	    //TODO this should be updated with the new mean values for each of the SLAs
+	    String combo=inst.family+"-"+inst.proccessor;
+	    Collaborator c1=collaboratorMap.get(combo);
+	    System.out.println("Collaborator -- Killing instance now. Feeding back performance statistics to the database. Family= "+ inst.family+" Processor= "+inst.proccessor);
+	    c1.update(c1.requestsPerSecond, c1.timePerReq, c1.transferRate, c1.concurrency, c1.totalTime);
+	    collaboratorMap.put(combo, c1);
+	    
 	    System.out.println("Killing instance of type "+inst.family+" id="+inst.id);
 	  }
 
@@ -354,61 +364,104 @@ public void start(){
    * @param t -> current time unit
    * @param time -> not sure ??
    */
-  void launch_instance(String family,int id,int t, int time){
-	  String whichFamily=family;
+  Instance launch_instance(int id,int t, int time){
+	  int threashold = currentCust.collaborateThreashold;
+	  int trials=0;
+	  
 	  String whichProcessor=null;
 	  double mean=0;
 	  double stddev=0;
 	  double runFrac;
 	  double cumFrac=0;
 	  int quantaForSimulation=this.simulatorRunParameters.time;
-	
-	  //TODO check if no of instances is greater than max possible instances
+	  Instance inst=null;
 	  
-	  //select the instance of the given type randomly
-	  long n3 = get_rand();
-//	  System.out.println("runFrac random = " + n3);
-	  runFrac=(double)(1-(double)n3)/(double)maxRand;
-	  for(CloudDistribution cd:instanceMap.get(whichFamily)){
-		  cumFrac+=cd.fraction;
-		  if(runFrac<=cumFrac){
-			  whichProcessor=cd.processor;
-			  mean = cd.mean;
-			  stddev=cd.stddev;
+	
+	  while(trials<threashold){
+		  //select the instance of the given type randomly
+		  //long n3 = get_rand();
+		  long n3 = -10;
+		  runFrac=(double)(1-(double)n3)/(double)maxRand;
+		  for(CloudDistribution cd:instanceMap.get(family)){
+			  cumFrac+=cd.fraction;
+			  if(runFrac<=cumFrac){
+				  whichProcessor=cd.processor;
+				  mean = cd.mean;
+				  stddev=cd.stddev;
+				  break;
+			  }
+		  }
+		  //add this given instance to the instance variable lists. Use collaborator to try and get the best processor type for this family
+		  inst= new Instance(id, family, whichProcessor, 1, time, t,currentCust);
+		  String combo=family+"-"+whichProcessor;
+		  if(collaboratorMap.get(combo).getRank()!=1) {
+			  System.out.println("Collaborator --- Exploring for better processor type . Current processor="+whichProcessor+" current family= "+family+" Current trial =" +trials+" Max trials for this customer= "+ threashold );
+			  trials++;
+			  continue;
+		  }
+		  else{
+			  System.out.println("Collaborator -- Not exploring for better processor.Current processor="+whichProcessor+" current family= "+family+" Current trial =" +trials+" Max trials for this customer= "+ threashold );
 			  break;
 		  }
 	  }
-    
-	  //add this given instance to the instance variable lists
-	  Instance inst= new Instance(id, whichFamily, whichProcessor, 1, time, t,c.id);
-	  allInstances.add(inst);
 	  
-	  //TODO bimodal frac 
+	  allInstances.add(inst);
 	  
 	  //set performance parameters
 	  for(int i=0;i<quantaForSimulation;i++){
 		  inst.perf[i]=stddev*gen_std_normal()+mean;
 	  }
 	  inst.curPerf=inst.perf[t];
-	  System.out.println("Launching instance of family "+whichFamily+", processor"+whichProcessor+" id "+id+"Performance of launched instance "+inst.curPerf);
+	  System.out.println("Launching instance of family "+family+", processor"+whichProcessor+" id "+id+"Performance of launched instance "+inst.curPerf);
+	  return inst;
   }
   
   
   public static void main(String args[]){
-	  PredictFamily MLObj = new PredictFamily("custInfo.csv", "custInfoAfterPrediction.csv");
+//	  PredictFamily MLObj = new PredictFamily("custInfo.csv", "custInfoAfterPrediction.csv");
+//	  List<Customer> customerInfoList=Helper.getCustomerInfo(MLObj.getOutputFilename());
+	  
 	  HashMap<String,List<CloudDistribution>> instanceMap=Helper.getDistribution("ner1-config");
-	  List<Customer> customerInfoList=Helper.getCustomerInfo(MLObj.getOutputFilename());
-	  //List<Customer> customerInfoList=Helper.getCustomerInfo("custInfoAfterPrediction.csv");
-	  //List<Customer> customerInfoList=Helper.getCustomerInfo("custInfo.csv");
+	  List<Customer> customerInfoList=Helper.getCustomerInfo("custInfoAfterPrediction.csv");
 	  RunParams simulatorRunParameters=Helper.getRunParams("runConfig.prop");
 	  HashMap<String,List<Integer>> custBasedOnClass = Helper.getClassifiedCust(customerInfoList);
+	  HashMap<String,Collaborator> collaboratorMap = Helper.getCollaboratorPerfStats("customerPerfStats.csv");
 	  
+	  int T=simulatorRunParameters.time;
+	  int units=simulatorRunParameters.quantum;
+	  List<Simulator> simObjList = new ArrayList<Simulator>(customerInfoList.size());
 	  
-	  for(Customer c : customerInfoList){
-//		  c.predictedFamily="micro";
-		  Simulator sim = new Simulator(instanceMap,simulatorRunParameters,Strategy.values()[simulatorRunParameters.strategy].toString(),c,custBasedOnClass);
-		  sim.start();
+	  for(int i=0;i<customerInfoList.size();i++){
+		  Simulator sim = new Simulator(instanceMap,simulatorRunParameters,Strategy.values()[simulatorRunParameters.strategy].toString(),customerInfoList.get(i),custBasedOnClass,collaboratorMap);
+		  simObjList.add(i,sim);
 	  }
+	  
+	  //execute 0th quantum for all customers
+	  for(int i=0;i< customerInfoList.size();i++){
+		  Simulator sim = simObjList.get(i);
+		  sim.simulateZero();
+	  } 
+	  
+	  //execute nth quantum for all customers one by one
+	  for(int j=1;j<T-1;j++){
+		  System.out.println("Time===="+j);
+		  for(int i=0;i< customerInfoList.size();i++){
+			  System.out.println("cust===="+i);
+			  Simulator sim = simObjList.get(i);
+			  if(Strategy.CPU_OPREP.equals(sim.currStratObj)|| Strategy.UPFRONT_OPREP.equals(sim.currStratObj)|| Strategy.MAX_CPU.equals(sim.currStratObj)){
+					  sim.simulateNth(j);
+					  sim.time+=units;
+			  }else{
+				  sim.time+=units*(T-1);
+			  }
+		  }
+	  }
+	  //execute last quantum for all customers
+	  for(int i=0;i< customerInfoList.size();i++){
+		  Simulator sim = simObjList.get(i); 
+		  sim.killAll();
+	  }
+	  
   }
 }
 

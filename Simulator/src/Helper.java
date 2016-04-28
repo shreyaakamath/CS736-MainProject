@@ -76,6 +76,43 @@ class Helper {
 		return instanceMap;
 
 	}
+	
+	public static HashMap<String,Collaborator> getCollaboratorPerfStats(String distributionFile) {
+		// Row format is : type,processor,rank,fraction,mean,stddev
+		HashMap<String,Collaborator> instanceMap = new HashMap<String,Collaborator>();
+		String csvFile = distributionFile;
+		BufferedReader br = null;
+		String line = "";
+		String cvsSplitBy = ",";
+		Collaborator eachInstance = null;
+		String type, processor;
+		double requestsPerSecond, timePerReq, transferRate,concurrency, totalTime;
+		int rank;
+
+		try {
+			br = new BufferedReader(new FileReader(csvFile));
+			while ((line = br.readLine()) != null) {
+				String[] row = line.split(cvsSplitBy);
+				type = String.valueOf(row[0]);
+				processor = String.valueOf(row[1]);
+				rank=Integer.valueOf(row[2]);
+				requestsPerSecond=Double.valueOf(row[3]);
+				timePerReq=Double.valueOf(row[4]);
+				transferRate=Double.valueOf(row[5]);
+				concurrency=Double.valueOf(row[6]);
+				totalTime=Double.valueOf(row[7]);
+				eachInstance = new Collaborator(rank,requestsPerSecond,timePerReq,transferRate,concurrency,totalTime);
+				String combo=type+"-"+processor;
+				instanceMap.put(combo, eachInstance);
+			}
+			br.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+		return instanceMap;
+	}
 
 	public static List<Customer> getCustomerInfo(String customerInfoFile) {
 		// id, class, concurrency,time,reqpersec,timerperreq,transrate
@@ -94,6 +131,7 @@ class Helper {
 		double transferRate;
 		double concurrency;
 		double totalTime;
+		int threashold;
 
 		int id;
 		HighLevelSla sla;
@@ -109,16 +147,17 @@ class Helper {
 				// row[7]);
 				id = Integer.parseInt(row[0]);
 				custClass = row[1];
-				concurrency = Double.parseDouble(row[2]);
-				totalTime = Double.parseDouble(row[3]);
-				reqPerSecond = Double.parseDouble(row[4]);
-				timePerReq = Double.parseDouble(row[5]);
-				transferRate = Double.parseDouble(row[6]);
-				predictedFamily = row[7];
+				threashold=Integer.parseInt(row[2]);
+				concurrency = Double.parseDouble(row[3]);
+				totalTime = Double.parseDouble(row[4]);
+				reqPerSecond = Double.parseDouble(row[5]);
+				timePerReq = Double.parseDouble(row[6]);
+				transferRate = Double.parseDouble(row[7]);
+				predictedFamily = row[8];
 				custSLA = new HighLevelSla(reqPerSecond, timePerReq,
 						transferRate, concurrency, totalTime);
 				eachCustomer = new Customer(id, custSLA, custClass,
-						predictedFamily);
+						predictedFamily,threashold);
 				custInfoList.add(eachCustomer);
 			}
 		} catch (FileNotFoundException e) {

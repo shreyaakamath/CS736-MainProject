@@ -1,5 +1,8 @@
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class Instance {
@@ -17,9 +20,10 @@ public class Instance {
 	double curPerf;
 	double perf[];//max time quantum
 	int customerId;
-	
+	Customer cust;
+	List<Integer> runStats;
 	public Instance(int id, String family,String processor, int active, int startTime,
-			int startQuantum , int custId) {
+			int startQuantum ,Customer cust) {
 		super();
 		this.id = id;
 		this.family= family;
@@ -28,7 +32,9 @@ public class Instance {
 		this.startTime = startTime;
 		this.startQuantum = startQuantum;
 		perf=new double[1000];
-		this.customerId=custId;
+		this.customerId=cust.id;
+		this.cust=cust;
+		runStats= new ArrayList<Integer>(Collections.nCopies(3, 0));
 	}
 	
 }
