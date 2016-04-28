@@ -6,5 +6,4 @@ sudo service nginx stop
 sudo apt-get --assume-yes install apache2
 sudo service apache2 stop
 sudo apt-get --assume-yes install lighttpd
-sudo /etc/init.d/lighttpd/ stop
-
+sudo service lighttpd stop
