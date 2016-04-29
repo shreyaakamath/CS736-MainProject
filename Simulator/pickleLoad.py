@@ -42,6 +42,10 @@ for row in data_reader:
 		family = 'nano'
 	elif(prediction == 2.0):
 		family = 'small'
+	elif(prediction == 3.0):
+		family = 'medium'
+	elif(prediction == 4.0):
+		family = 'large'
 	csvString = custid + "," + custClass + "," + concurrency + "," + time + "," + reqpersec + "," + timeperreq + "," + transrate + "," + family
 	output_file.write(unicode(csvString + "\n"))
 

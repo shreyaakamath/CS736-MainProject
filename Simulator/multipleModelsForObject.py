@@ -26,6 +26,10 @@ for row in data_reader:
 		type = 1	
 	elif('small' in str(type)):
 		type = 2
+	elif('medium' in str(type)):
+		type = 3
+	elif('large' in str(type)):
+		type = 4
 	#concurrency,time,reqpersec,timeperreqall,timerperreq,trasrate,type
 	instance = [row[4], row[5], row[10],row[11],row[12],row[13],type]
 	data.append([float(x) for x in instance])
@@ -107,7 +111,3 @@ SVCaccuracy = SVCmodel.score(testing_data_input,testing_data_output)
 predicted_output =SVCmodel.predict(testing_data_input)
 print "Bagging SVC : "+str(SVCaccuracy*100.0)
 '''
-
-
-
-
