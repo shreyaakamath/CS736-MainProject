@@ -1,0 +1,11 @@
+Pointers:
+
+(a) Paper also talks about normally distributed random variables !!!
+	# gen_std_normal --> Generating Gaussian Random Numbers (http://www.design.caltech.edu/erik/Misc/Gaussian.html)
+	# In Python, following options - 
+		- https://docs.python.org/2/library/random.html :::: random.gauss(0,1)
+		- http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.random.normal.html :::: numpy.random.normal()
+	# In Python, mimicing C way of generating random variable is as follows - (test.py does this)
+		- http://stackoverflow.com/questions/14720799/how-to-get-numbers-from-dev-random-using-python
+	# Difference between random and urandom - 
+		- http://stackoverflow.com/questions/23712581/differences-between-random-and-urandom

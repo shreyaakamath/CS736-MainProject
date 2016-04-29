@@ -17,8 +17,18 @@ import pickle
 data_reader = csv.reader(open(sys.argv[1], "rb"))
 data_reader.next()
 
-data = []
+training_data_A = [] #A = (Apache, Ng..), (L)
+testing_data_A = []
+
+training_data_B = [] #B = (Ng.., L...), (Apache)
+testing_data_B = []
+
+training_data_C = [] #C = (L.., Apache..), (Ng...)
+testing_data_C = []
+
+whole = []
 for row in data_reader:
+	server = row[0]
 	type = row[-1]
 	if('micro' in str(type)):	
 		type = 0
@@ -32,37 +42,85 @@ for row in data_reader:
 		type = 4
 	#concurrency,time,reqpersec,timeperreqall,timerperreq,trasrate,type
 	instance = [row[4], row[5], row[10],row[11],row[12],row[13],type]
-	data.append([float(x) for x in instance])
+	if ("apache2" in server):
+		training_data_A.append([float(x) for x in instance])
+		testing_data_B.append([float(x) for x in instance])
+		training_data_C.append([float(x) for x in instance])
+	elif("nginx" in server):
+		training_data_A.append([float(x) for x in instance])
+		training_data_B.append([float(x) for x in instance])
+		testing_data_C.append([float(x) for x in instance])
+	else:
+		testing_data_A.append([float(x) for x in instance])
+		training_data_B.append([float(x) for x in instance])
+		training_data_C.append([float(x) for x in instance])
+	whole.append([float(x) for x in instance])
 
-
-#min_max_scaler = preprocessing.MinMaxScaler()
-#data = min_max_scaler.fit_transform(data)
-data = np.array(data,dtype="float")
-
-#from random import shuffle
-#np.random.shuffle(data)
-
-input_data = data[0:len(data),:-1]
-output_data = data[0:len(data),-1]
-
-
-training_data_input, testing_data_input, training_data_output, testing_data_output = train_test_split(input_data, output_data, test_size=0.95, random_state=0)
-print "b4"
-print testing_data_input
-print "after"
-#print len(training_data_input)
-#print len(testing_data_input)
-
-RFmodel = RandomForestClassifier(n_estimators = 100)
-#RFmodel.fit(training_data_input,training_data_output)
-RFmodel.fit(input_data,output_data)
-RFaccuracy = RFmodel.score(testing_data_input,testing_data_output)
-predicted_output = RFmodel.predict(testing_data_input)
-print predicted_output
-print "RFs :"+str(RFaccuracy*100.0)
-with open("testOutput", "wb") as f:
-	pickle.dump(RFmodel.fit(input_data,output_data),f)
 '''
+#Convert to numpy
+training_data_A = np.array(training_data_A,dtype="float")
+training_data_B = np.array(training_data_B,dtype="float")
+training_data_C = np.array(training_data_C,dtype="float")
+testing_data_A = np.array(testing_data_A,dtype="float")
+testing_data_B = np.array(testing_data_B,dtype="float")
+testing_data_C = np.array(testing_data_C,dtype="float")
+'''
+whole = np.array(whole, dtype="float")
+
+'''
+np.random.shuffle(training_data_A)
+np.random.shuffle(training_data_B)
+np.random.shuffle(training_data_C)
+np.random.shuffle(whole)
+'''
+
+input_whole_data = whole[0:len(whole),:-1]
+output_whole_data = whole[0:len(whole),-1]
+
+training_data_input, testing_data_input, training_data_output, testing_data_output = train_test_split(input_whole_data, output_whole_data, test_size=0.30, random_state=0)
+
+RFmodel= RandomForestClassifier(n_estimators = 100)
+RFmodel = RFmodel.fit(training_data_input, training_data_output)
+RFaccuracy = RFmodel.score(testing_data_input, testing_data_output)
+print "RF (All Data) :"+str(RFaccuracy*100.0)
+
+'''
+#Generate training data for 3 scenarios
+input_training_data_A = training_data_A[0:len(training_data_A),:-1]
+input_training_data_B = training_data_B[0:len(training_data_B),:-1]
+input_training_data_C = training_data_C[0:len(training_data_C),:-1]
+output_training_data_A = training_data_A[0:len(training_data_A),-1]
+output_training_data_B = training_data_B[0:len(training_data_B),-1]
+output_training_data_C = training_data_C[0:len(training_data_C),-1]
+
+#Generate testing data for 3 scenarios
+input_testing_data_A = testing_data_A[0:len(testing_data_A),:-1]
+input_testing_data_B = testing_data_B[0:len(testing_data_B),:-1]
+input_testing_data_C = testing_data_C[0:len(testing_data_C),:-1]
+output_testing_data_A = testing_data_A[0:len(testing_data_A),-1]
+output_testing_data_B = testing_data_B[0:len(testing_data_B),-1]
+output_testing_data_C = testing_data_C[0:len(testing_data_C),-1]
+
+RFmodel_A = RandomForestClassifier(n_estimators = 100)
+RFmodel_A = RFmodel_A.fit(input_training_data_A,output_training_data_A)
+RFaccuracy = RFmodel_A.score(input_testing_data_A,output_testing_data_A)
+print "RF Train --> (A,N) Test ---> (L) :"+str(RFaccuracy*100.0)
+
+RFmodel_B= RandomForestClassifier(n_estimators = 100)
+RFmodel_B = RFmodel_B.fit(input_training_data_B,output_training_data_B)
+RFaccuracy = RFmodel_B.score(input_testing_data_B,output_testing_data_B)
+print "RF Train --> (N,L) Test ---> (A) :"+str(RFaccuracy*100.0)
+
+RFmodel_C = RandomForestClassifier(n_estimators = 100)
+RFmodel_C = RFmodel_C.fit(input_training_data_C,output_training_data_C)
+RFaccuracy = RFmodel_C.score(input_testing_data_C,output_testing_data_C)
+print "RF Train --> (L,A) Test ---> (N) :"+str(RFaccuracy*100.0)
+'''
+
+'''
+with open("testOutput.m", "wb") as f:
+	pickle.dump(RFmodel.fit(input_data,output_data),f)
+
 NBmodel = MultinomialNB()
 NBmodel.fit(training_data_input,training_data_output)
 NBaccuracy = NBmodel.score(testing_data_input,testing_data_output)
