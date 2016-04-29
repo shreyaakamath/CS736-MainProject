@@ -13,6 +13,7 @@ for line in lines:
 	data = line.split(",")
 	if len(data) == 15:
 		new_data = data[3:-1]
+		#time,reqpersec,timeperreqall,timeperreq,transrate
 		valid_data.append([new_data[2], new_data[7], new_data[8], new_data[9], new_data[10]])
 
 valid_data = np.array(valid_data,dtype="float")
