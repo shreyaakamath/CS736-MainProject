@@ -1,13 +1,14 @@
-TODO - 30th April, 2016
+TODO
 
-1. Decide Training and Testing Data SPLIT
-2. Support new Config Format in Python Simulator
-3. Make the refactored code working
+1. Decide Training and Testing Data SPLIT - DONE
+2. Support new Config Format in Python Simulator - DONE
+3. Make the refactored code working - DONE
 4. Make the swapping strategy work 
-5. Come up with Syntethic Benchmark Config files
-6. ML Evaluation Part - Across ML models
-7. ML Correction Strategy - Measure efficieny
+5. Come up with Syntethic Benchmark Config files - DONE (Just needs to be generated)
+6. ML Evaluation Part - Across ML models - DONE
+7. ML Correction Strategy - Measure efficieny - DONE (Doesn't work as expected, will comeback later)
 8. Measure efficiency of More for your money models with our Config files
 9. Measure efficiency of More for your money models + collaboration with our Config files
 10. Measure efficiency of More for your money models + swapping with our Config files
 11. Come up with new strategies to take in HL-SLA's into scheduling
+12. Report - Shreya is working on this
