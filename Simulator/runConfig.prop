@@ -1,9 +1,0 @@
-strategy=3
-time=24
-quantum=3600
-A=10
-B=10
-migrationPenality=180
-expectedNoOfReMig=2
-alphaAgg=0
-alphaServ=1

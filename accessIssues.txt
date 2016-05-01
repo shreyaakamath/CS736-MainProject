@@ -1,2 +1,0 @@
-How to access web server form outside network 
-1. Log in to AWS and click Security Groups on the left under Network & Security 2. Select your group from the list of security groups in the top panel 3. Click the Inbound tab in the panel on the bottom and click the button labeled Edit 4. Click the Add Rule button 5. Apply the following settings in the new rule: Type: Custom TCP Rule Port Range: 80 Source: Anywhere 
