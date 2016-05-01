@@ -26,6 +26,10 @@ testing_data_B = []
 training_data_C = [] #C = (L.., Apache..), (Ng...)
 testing_data_C = []
 
+
+apache2_data = []
+nginx_data = []
+light_data = []
 whole = []
 for row in data_reader:
 	server = row[0]
@@ -43,20 +47,49 @@ for row in data_reader:
 	#concurrency,time,reqpersec,timeperreqall,timerperreq,trasrate,type
 	instance = [row[4], row[5], row[10],row[11],row[12],row[13],type]
 	if ("apache2" in server):
-		training_data_A.append([float(x) for x in instance])
-		testing_data_B.append([float(x) for x in instance])
-		training_data_C.append([float(x) for x in instance])
+		apache2_data.append([float(x) for x in instance])
 	elif("nginx" in server):
-		training_data_A.append([float(x) for x in instance])
-		training_data_B.append([float(x) for x in instance])
-		testing_data_C.append([float(x) for x in instance])
+		nginx_data.append([float(x) for x in instance])
 	else:
-		testing_data_A.append([float(x) for x in instance])
-		training_data_B.append([float(x) for x in instance])
-		training_data_C.append([float(x) for x in instance])
+		light_data.append([float(x) for x in instance])
+
 	whole.append([float(x) for x in instance])
 
+apache_scaler = preprocessing.MinMaxScaler(feature_range=(0,10))
+nginx_scaler = preprocessing.MinMaxScaler(feature_range=(0,10))
+light_scaler = preprocessing.MinMaxScaler(feature_range=(0,10))
 
+apache2_data = np.array(apache2_data,dtype="float")
+nginx_data = np.array(nginx_data,dtype="float")
+light_data = np.array(light_data,dtype="float")
+
+apache2_data_input = apache2_data[0:len(apache2_data),:-1]
+apache2_data_output = apache2_data[0:len(apache2_data),-1]
+
+nginx_data_input = nginx_data[0:len(nginx_data),:-1]
+nginx_data_output = nginx_data[0:len(nginx_data),-1]
+
+light_data_input = light_data[0:len(apache2_data),:-1]
+light_data_output = light_data[0:len(apache2_data),-1]
+
+apache2_data_input = apache_scaler.fit_transform(apache2_data_input)
+nginx_data_input = nginx_scaler.fit_transform(nginx_data_input)
+light_data_input = light_scaler.fit_transform(light_data_input)
+
+apache2_data = np.concatenate((apache2_data,nginx_data))
+
+input_training_data = np.concatenate((apache2_data_input,nginx_data_input))
+output_training_data = np.concatenate((apache2_data_output,nginx_data_output))
+
+input_testing_data = light_data_input
+output_testing_data = light_data_output
+
+RFmodel= RandomForestClassifier(n_estimators = 100)
+RFmodel = RFmodel.fit(input_training_data, output_training_data)
+RFaccuracy = RFmodel.score(input_testing_data, output_testing_data)
+print "RF (HOPE) :"+str(RFaccuracy*100.0)
+
+'''
 #Convert to numpy
 training_data_A = np.array(training_data_A,dtype="float")
 training_data_B = np.array(training_data_B,dtype="float")
@@ -127,7 +160,7 @@ RFmodel_C = RFmodel_C.fit(input_training_data_C,output_training_data_C)
 RFaccuracy = RFmodel_C.score(input_testing_data_C,output_testing_data_C)
 print "RF Train --> (L,A) Test ---> (N) :"+str(RFaccuracy*100.0)
 
-
+'''
 '''
 with open("testOutput.m", "wb") as f:
 	pickle.dump(RFmodel.fit(input_data,output_data),f)
