@@ -100,7 +100,7 @@ strategies = {
 
 class Customer:
 
-	def __init__(self, config_filename, collaborator = False):
+	def __init__(self, config_filename):
 		self.config_filename = config_filename #Name of config file
 		self.instanceTypes = [] #Array to hold objs of clas Instance_type
 		self.instances = [] #Array to hold objs of class Instance
@@ -118,9 +118,9 @@ class Customer:
 
 		self.c = 0 #collaboration probability
 		self.cu = 0 #maximum number of preemtive surrender of machines within one quantum
-		self.collaborator = collaborator
+		self.collaborator = False
 		self.collaborator_instances = [] #Array to hold useless collaborator instances
-
+		self.collaborator_success_count = 0 
 		self.config_loader()
 
 	def config_loader(self):
@@ -129,7 +129,9 @@ class Customer:
 		lines = fp.read().split("\n")
 		lines = [line for line in lines if line!=""]
 
-		self.strategy, self.T, self.units, self.A, self.B, self.m, self.mu, self.c, self.cu = [float(x) for x in lines[0].split(",")]
+		self.collaborator = eval(line[0].split(",")[-1])
+
+		self.strategy, self.T, self.units, self.A, self.B, self.m, self.mu, self.c, self.cu = [float(x) for x in lines[0].split(",")[:-1]]
 		self.T = int(self.T)
 		self.A = int(self.A)
 		self.B = int(self.B)
@@ -215,6 +217,7 @@ class Customer:
 
 				if instance_obj.type == 0:
 					print("Collaboration works... "+str(time))
+					self.collaborator_success_count += 1
 					self.instances.append(instance_obj)
 					break
 				else:
@@ -393,6 +396,7 @@ class Customer:
 
 		print("Total Number of instances used: "+str(num_instances))
 		print("Number of migrations: "+str(num_instances - self.A - self.B))
+		print("Number of types collaboration works: "+str(self.collaborator_success_count))
 		print("Total work: "+str(total_work))
 		print("Effective Perf Rate: "+str(aggregate_perf))
 		print("Naive total work: "+str(naive_total_work))
@@ -409,7 +413,7 @@ class Customer:
 
 if __name__ == "__main__":
 
-	customer = Customer("ner1-config", True)
+	customer = Customer(sys.argv[1])
 	customer.simulate()
 
 
