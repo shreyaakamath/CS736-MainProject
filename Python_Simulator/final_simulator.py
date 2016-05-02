@@ -163,10 +163,9 @@ class Customer:
 			print("c: "+str(self.c))
 			print("cu: "+str(self.cu))
 			print("Number of instances: "+str(self.num_instance_types))
-			'''
 			for instance in self.instanceTypes:
 				print instance
-			'''
+
 			print("**************************************************")
 
 	def launch_instance(self,instance_id, time):
