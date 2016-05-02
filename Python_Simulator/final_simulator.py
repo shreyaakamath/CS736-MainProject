@@ -21,7 +21,7 @@ START_INSTANCE_EVENT_STR = "launch instance"
 KILL_INSTANCE_EVENT_STR = "kill instance"
 MIGRATED_EVENT_STR = "migrate instance"
 
-DEBUG = 2 # Set to 1 to print Debug statements, else set to 0 for no print statements or set to 2 for Log statements
+DEBUG = 0 # Set to 1 to print Debug statements, else set to 0 for no print statements or set to 2 for Log statements
 
 class Instance_type:
 
@@ -100,7 +100,7 @@ strategies = {
 
 class Customer:
 
-	def __init__(self, config_filename, collaborator = False):
+	def __init__(self, config_filename):
 		self.config_filename = config_filename #Name of config file
 		self.instanceTypes = [] #Array to hold objs of clas Instance_type
 		self.instances = [] #Array to hold objs of class Instance
@@ -118,9 +118,9 @@ class Customer:
 
 		self.c = 0 #collaboration probability
 		self.cu = 0 #maximum number of preemtive surrender of machines within one quantum
-		self.collaborator = collaborator
+		self.collaborator = False
 		self.collaborator_instances = [] #Array to hold useless collaborator instances
-
+		self.collaborator_success_count = 0 
 		self.config_loader()
 
 	def config_loader(self):
@@ -129,7 +129,9 @@ class Customer:
 		lines = fp.read().split("\n")
 		lines = [line for line in lines if line!=""]
 
-		self.strategy, self.T, self.units, self.A, self.B, self.m, self.mu, self.c, self.cu = [float(x) for x in lines[0].split(",")]
+		self.collaborator = eval(lines[0].split(",")[-1])
+
+		self.strategy, self.T, self.units, self.A, self.B, self.m, self.mu, self.c, self.cu = [float(x) for x in lines[0].split(",")[:-1]]
 		self.T = int(self.T)
 		self.A = int(self.A)
 		self.B = int(self.B)
@@ -146,19 +148,25 @@ class Customer:
 			rank_count += 1
 			self.num_instance_types += 1
 
-		if (DEBUG == 1 or DEBUG == 2):
+		if (DEBUG == 1 or DEBUG == 2 or DEBUG == 0):
 			print("********* Contents of Configuration File *********")
 			if (self.collaborator == True):
 				print("Strategy: "+self.strategy+"_COLLAB")
+			else:
+				print("Strategy: "+self.strategy)
 			print("T: "+str(self.T))
 			print("units: "+str(self.units))
 			print("A: "+str(self.A))
 			print("B: "+str(self.B))
 			print("m: "+str(self.m))
 			print("mu: "+str(self.mu))
+			print("c: "+str(self.c))
+			print("cu: "+str(self.cu))
 			print("Number of instances: "+str(self.num_instance_types))
+			'''
 			for instance in self.instanceTypes:
 				print instance
+			'''
 			print("**************************************************")
 
 	def launch_instance(self,instance_id, time):
@@ -169,7 +177,7 @@ class Customer:
 			cumFrac = 0
 			#ranFrac = (1 - float(get_rand()) / float(RAND_MAX)) #Get random fraction
 			ranFrac = get_rand()
-			print ranFrac
+			#print ranFrac
 			for i in range(0,self.num_instance_types):
 				cumFrac += self.instanceTypes[i].frac
 				if (ranFrac <= cumFrac):
@@ -215,6 +223,7 @@ class Customer:
 
 				if instance_obj.type == 0:
 					print("Collaboration works... "+str(time))
+					self.collaborator_success_count += 1
 					self.instances.append(instance_obj)
 					break
 				else:
@@ -294,7 +303,7 @@ class Customer:
 
 	def simulate(self):
 		#REMEMBER: To do GLOBAL for all variables above incase you want to modify them 
-		print("Time(sec)\t\tID\t\tEvent")
+		#print("Time(sec)\t\tID\t\tEvent")
 		time = 0 #Running time in seconds
 		whichType = 0 #Processor type
 		i = 0 #Looper
@@ -373,7 +382,7 @@ class Customer:
 				self.kill_instance(i, time)
 			total_work += self.instances[i].total_work
 
-		print ("Done with current strategy, killing naive instances...")
+		#print ("Done with current strategy, killing naive instances...")
 		#Calculate total work done for naive instances
 		time = self.units*self.T
 		for i in range(0,self.A):
@@ -393,6 +402,7 @@ class Customer:
 
 		print("Total Number of instances used: "+str(num_instances))
 		print("Number of migrations: "+str(num_instances - self.A - self.B))
+		print("Number of times collaboration works: "+str(self.collaborator_success_count))
 		print("Total work: "+str(total_work))
 		print("Effective Perf Rate: "+str(aggregate_perf))
 		print("Naive total work: "+str(naive_total_work))
@@ -409,7 +419,7 @@ class Customer:
 
 if __name__ == "__main__":
 
-	customer = Customer("ner1-config", True)
+	customer = Customer(sys.argv[1])
 	customer.simulate()
 
 
