@@ -13,8 +13,8 @@ if __name__ == "__main__":
     
     '''
     runParams will be first line of the config file
-    format - strategy,time,quantum,A,B,migrationPenality,expectedNoOfReMig,colProb,cu-maxNoofPremp,collSwitch
-    sample - 2,24,3600,10,10,180,2,0,1
+    format - strategy,time,quantum,A,B,migrationPenality,expectedNoOfReMig,alphaAgg,alphaServ, colProb, cu-maxNoofPremp, collSwitch
+    sample - 2,24,3600,10,10,180,2,0,1,x,y
     '''
     T = 24
     quantum = 3600
