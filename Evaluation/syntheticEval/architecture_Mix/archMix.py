@@ -13,8 +13,8 @@ if __name__ == "__main__":
     
     '''
     runParams will be first line of the config file
-    format - strategy,time,quantum,A,B,migrationPenality,expectedNoOfReMig,alphaAgg,alphaServ, colProb, cu-maxNoofPremp, collSwitch
-    sample - 2,24,3600,10,10,180,2,0,1,x,y
+    format - strategy,time,quantum,A,B,migrationPenality,expectedNoOfReMig,colProb,cu-maxNoofPremp,collSwitch
+    sample - 2,24,3600,10,10,180,2,0,1
     '''
     T = 24
     quantum = 3600
@@ -24,10 +24,10 @@ if __name__ == "__main__":
     expectedMig = 2
     alphaAgg = 0
     alphaServ = 1 
-    good_values = [0.5,0.6,0.7,0.8,0.9,1,0.5,0.4,0.3,0.2,0]
+    good_values = [0.5,0.6,0.7,0.8,0.9,1,0.5,0.4,0.3,0.2,0.1,0]
     mean_good = 10
     stddev_good = float(0.05*mean_good)
-    bad_values = [0.5,0.4,0.3,0.2,0,0.5,0.6,0.7,0.8,0.9,1]
+    bad_values = [0.5,0.4,0.3,0.2,0.1,0,0.5,0.6,0.7,0.8,0.9,1]
     mean_bad = 7 
     stddev_bad = float(0.05*mean_bad)
     #good and bad machines have equal distribution
