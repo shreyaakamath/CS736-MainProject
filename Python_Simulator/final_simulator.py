@@ -222,7 +222,7 @@ class Customer:
 				instance_obj = Instance(instance_id, whichRank, 1, time,perf_array)
 
 				if instance_obj.type == 0:
-					print("Collaboration works... "+str(time))
+					#print("Collaboration works... "+str(time))
 					self.collaborator_success_count += 1
 					self.instances.append(instance_obj)
 					break
@@ -235,12 +235,12 @@ class Customer:
 			#HORRIBLE CODE, but it's okay given that I have been coding since 2:09 PM yesterday and it's 8:47 AM now
 
 			if(self.instanceTypes[0].frac < self.c or collaboration_tries == 0):
-				print("Collaboartion doesn't work..."+str(time))
+				#print("Collaboartion doesn't work..."+str(time))
 				self.total_num_instances += 1 #Increment total count 
 				cumFrac = 0
 				#ranFrac = (1 - float(get_rand()) / float(RAND_MAX)) #Get random fraction
 				ranFrac = get_rand()
-				print ranFrac
+				#print ranFrac
 				for i in range(0,self.num_instance_types):
 					cumFrac += self.instanceTypes[i].frac
 					if (ranFrac <= cumFrac):
@@ -389,13 +389,14 @@ class Customer:
 			self.kill_instance(i, time, True)
 			naive_total_work += self.naive_instances[i].total_work
 
+		collaborator_work = 0 
 		if (self.collaborator == True):
-			collaborator_work = 0 
-			print("Calculating the penalty of using collaborator instances... ")
+			
+			#print("Calculating the penalty of using collaborator instances... ")
 			for surrendered_instance in self.collaborator_instances:
 				collaborator_work += surrendered_instance.total_work
-			print("Unnecessary work done by the collaborator: "+str(collaborator_work))
-			total_work -= collaborator_work
+		print("Unnecessary work done by the collaborator: "+str(collaborator_work))
+		total_work -= collaborator_work
 
 		aggregate_perf = total_work / float((self.A*self.T+self.B) * self.units)
 		naive_aggregate_perf = naive_total_work / float((self.A*self.T) * self.units)
