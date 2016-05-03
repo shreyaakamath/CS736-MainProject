@@ -1,0 +1,18 @@
+1. Graph 1
+input file : iperf_results.csv	
+Title : Network Performance benchmark - Iperf 
+X-axis : Tial number
+Y-axis : Bandwidth in (Giga bits/second)
+
+2. Graph 2
+input file : nqueen_results.csv
+Title : Compute Benchmark - NQueens
+X-axis : Trial number
+Y-axis : Time taken in (seconds)
+
+3. Graph 3 
+input file : apacheTrend.csv, nginxTrend.csv
+Title : apacheBench results for two web servers Apache2 and Nginx
+X-axis : Family of EC2 instance
+Y-axis : 1 SLA we choose
+2 bars per point on the x-axis that denotes the web server Apache and Nginx
