@@ -24,10 +24,10 @@ if __name__ == "__main__":
     expectedMig = 2
     alphaAgg = 0
     alphaServ = 1 
-    good_values = [0.5,0.6,0.7,0.8,0.9,1,0.5,0.4,0.3,0.2,0.1,0]
+    good_values = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
     mean_good = 10
     stddev_good = float(0.05*mean_good)
-    bad_values = [0.5,0.4,0.3,0.2,0.1,0,0.5,0.6,0.7,0.8,0.9,1]
+    bad_values = [1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0]
     mean_bad = 7 
     stddev_bad = float(0.05*mean_bad)
     #good and bad machines have equal distribution
