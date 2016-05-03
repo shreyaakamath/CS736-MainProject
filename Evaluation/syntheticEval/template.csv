@@ -1,0 +1,1 @@
+collabarotar_status,strategy,T,units,A,B,m,mu,c,cu,no_instances,good_rank,good_frac,good_mean,good_stddev,bad_rank,bad_frac,bad_mean,bad_stddev,Unnecessary_work,no_instances_used,no_migrations,no_collaboration_works,total_work,effective_perf_rate,naive_total_work,naive_effective_rate,speedup,percentage_improvement
